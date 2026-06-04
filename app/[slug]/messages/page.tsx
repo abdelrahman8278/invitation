@@ -5,15 +5,15 @@ import { AnimatePresence, motion } from 'framer-motion'
 import Link from 'next/link'
 import { useParams, useSearchParams } from 'next/navigation'
 import { FaArrowLeft, FaLock, FaRegEnvelope } from 'react-icons/fa6'
-import { supabase } from '@/lib/supabase'
-import { getInvitationTemplateId, getInvitationTemplateUi } from '@/lib/templates'
-import type { GuestMessage, Invitation } from '@/lib/types'
+import { getInvitationTemplateId, getInvitationTemplateUi, getInvitationThemeMode } from '@/lib/templates'
+import type { GuestMessage } from '@/lib/types'
 
 export default function MessagesPage() {
     const params = useParams<{ slug: string }>()
     const searchParams = useSearchParams()
     const slug = params.slug
     const template = getInvitationTemplateId(searchParams.get('template'))
+    const mode = getInvitationThemeMode(searchParams.get('mode'))
     const ui = getInvitationTemplateUi(template)
 
     const [password, setPassword] = useState('')
@@ -27,32 +27,38 @@ export default function MessagesPage() {
         setLoading(true)
         setError(false)
 
-        const { data } = await supabase
-            .from('invitations')
-            .select('*')
-            .eq('slug', slug)
-            .single<Invitation>()
+        let response: Response
 
-        if (data?.access_password === password) {
-            const { data: msgs } = await supabase
-                .from('guest_messages')
-                .select('*')
-                .eq('invitation_id', data.id)
-                .order('created_at', { ascending: false })
-                .returns<GuestMessage[]>()
-
-            setMessages(msgs || [])
-            setAllowed(true)
-        } else {
+        try {
+            response = await fetch(`/api/invitations/${encodeURIComponent(slug)}/messages`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ password }),
+            })
+        } catch {
             setError(true)
+            setLoading(false)
+            return
         }
 
+        if (!response.ok) {
+            setError(true)
+            setLoading(false)
+            return
+        }
+
+        const result = await response.json() as { messages?: GuestMessage[] }
+
+        setMessages(Array.isArray(result.messages) ? result.messages : [])
+        setAllowed(true)
         setLoading(false)
     }
 
     return (
         <main className={`relative min-h-screen overflow-hidden px-4 py-24 ${ui.pageBackground}`}>
-            <BackLink slug={slug} template={template} actionButton={ui.actionButton} actionIcon={ui.actionIcon} />
+            <BackLink slug={slug} template={template} mode={mode} actionButton={ui.actionButton} actionIcon={ui.actionIcon} />
 
             {!allowed ? (
                 <section className="flex min-h-[calc(100vh-12rem)] items-center justify-center">
@@ -176,11 +182,13 @@ export default function MessagesPage() {
 function BackLink({
     slug,
     template,
+    mode,
     actionButton,
     actionIcon,
 }: {
     slug: string
     template: string
+    mode: string
     actionButton: string
     actionIcon: string
 }) {
@@ -191,7 +199,7 @@ function BackLink({
             className="fixed left-5 top-5 z-50 sm:left-6 sm:top-6"
         >
             <Link
-                href={`/${slug}?template=${template}`}
+                href={`/${slug}?template=${template}&mode=${mode}`}
                 className={`flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 transition-all duration-300 group ${actionButton}`}
                 aria-label="العودة للدعوة"
             >

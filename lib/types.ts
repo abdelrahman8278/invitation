@@ -11,7 +11,11 @@ export type Invitation = {
     location_city: string
     template?: InvitationTemplateId | string | null
     template_id?: InvitationTemplateId | string | null
-    access_password?: string
+}
+
+export type InvitationAccess = {
+    id: Invitation['id']
+    access_password?: string | null
 }
 
 export type GuestMessage = {

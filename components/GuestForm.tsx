@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { supabase } from '@/lib/supabase'
 import { getInvitationTemplateUi } from '@/lib/templates'
 import type { InvitationTemplateId } from '@/lib/templates'
 
@@ -31,13 +30,29 @@ export default function GuestForm({ invitationId, template }: GuestFormProps) {
         setLoading(true)
         setError('')
 
-        const { error: submitError } = await supabase.from('guest_messages').insert([
-            { invitation_id: invitationId, name: trimmedName, message: trimmedMessage },
-        ])
+        let response: Response
+
+        try {
+            response = await fetch('/api/guest-messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    invitationId,
+                    name: trimmedName,
+                    message: trimmedMessage,
+                }),
+            })
+        } catch {
+            setLoading(false)
+            setError('حدث خطأ أثناء الإرسال، حاول مرة أخرى')
+            return
+        }
 
         setLoading(false)
 
-        if (submitError) {
+        if (!response.ok) {
             setError('حدث خطأ أثناء الإرسال، حاول مرة أخرى')
             return
         }

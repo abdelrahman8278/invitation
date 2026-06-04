@@ -7,32 +7,22 @@ import { useSearchParams } from 'next/navigation'
 import { FaRegEnvelope } from 'react-icons/fa6'
 import Envelope from './Envelope'
 import InvitationCard from './InvitationCard'
-import TemplateSwitcher from './TemplateSwitcher'
 import type { Invitation } from '@/lib/types'
 import { getInvitationTemplateId, getInvitationTemplateUi, getInvitationThemeMode, getInvitationThemeVars } from '@/lib/templates'
 import type { CSSProperties } from 'react'
 
 type InvitationViewProps = {
     data: Invitation
-    templateOverride?: string
 }
 
-export default function InvitationView({ data, templateOverride }: InvitationViewProps) {
+export default function InvitationView({ data }: InvitationViewProps) {
     const [open, setOpen] = useState(false)
     const audioRef = useRef<HTMLAudioElement | null>(null)
     const searchParams = useSearchParams()
-    const templateFromUrl = searchParams.get('template')
-    const template = getInvitationTemplateId(templateFromUrl ?? templateOverride ?? data.template ?? data.template_id)
+    const template = getInvitationTemplateId(data.template ?? data.template_id)
     const mode = getInvitationThemeMode(searchParams.get('mode'))
     const ui = getInvitationTemplateUi(template)
     const themeVars = getInvitationThemeVars(mode) as CSSProperties
-
-    // Preserve open state when template changes
-    const prevTemplateRef = useRef(template)
-    if (prevTemplateRef.current !== template) {
-        prevTemplateRef.current = template
-        // open state is intentionally preserved
-    }
 
     const handleOpen = () => {
         setOpen(true)
@@ -45,8 +35,6 @@ export default function InvitationView({ data, templateOverride }: InvitationVie
             data-invitation-mode={mode}
             style={themeVars}
         >
-            <TemplateSwitcher activeTemplate={template} activeMode={mode} />
-
             <audio ref={audioRef} loop src="/music.mp3" />
 
             <AnimatePresence mode="wait">
