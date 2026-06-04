@@ -1,24 +1,25 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import './globals.css'
+import { Playfair_Display, Montserrat, Cairo } from 'next/font/google'
 
-export const metadata: Metadata = {
-  title: "The Digital Atelier | You're Invited",
-  description: "Wedding invitation management platform",
-};
+const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
+const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat' })
+const cairo = Cairo({ subsets: ['arabic'], variable: '--font-cairo' })
+
+export const metadata = {
+    title: 'Abdelrahman & Esraa Wedding',
+    description: 'You are cordially invited to our wedding',
+}
 
 export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en" className="light">
-      <head>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
-      </head>
-      <body>
-        {children}
-      </body>
-    </html>
-  );
+    children,
+}: {
+    children: React.ReactNode
+}) {
+    return (
+        <html lang="en" className={`${playfair.variable} ${montserrat.variable} ${cairo.variable}`}>
+            <body className="font-montserrat" suppressHydrationWarning>
+                {children}
+            </body>
+        </html>
+    )
 }
