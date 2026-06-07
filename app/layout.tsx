@@ -6,7 +6,7 @@ const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat
 const cairo = Cairo({ subsets: ['arabic'], variable: '--font-cairo' })
 
 export const metadata = {
-    title: 'Abdelrahman & Esraa Wedding',
+    title: 'Wedding Invitation',
     description: 'You are cordially invited to our wedding',
 }
 
