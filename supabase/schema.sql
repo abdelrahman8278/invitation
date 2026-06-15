@@ -11,6 +11,7 @@ create table if not exists public.invitations (
     location_city text not null default '',
     template text,
     template_id text,
+    music_url text,
     access_password text not null,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
@@ -63,7 +64,8 @@ grant select (
     location_name,
     location_city,
     template,
-    template_id
+    template_id,
+    music_url
 ) on public.invitations to anon, authenticated;
 
 grant insert (invitation_id, name, message) on public.guest_messages to anon, authenticated;

@@ -11,6 +11,7 @@ export type Invitation = {
     location_city: string
     template?: InvitationTemplateId | string | null
     template_id?: InvitationTemplateId | string | null
+    music_url?: string | null
 }
 
 export type InvitationAccess = {

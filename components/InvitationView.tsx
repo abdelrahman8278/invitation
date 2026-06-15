@@ -35,7 +35,7 @@ export default function InvitationView({ data }: InvitationViewProps) {
             data-invitation-mode={mode}
             style={themeVars}
         >
-            <audio ref={audioRef} loop src="/music.mp3" />
+            <audio ref={audioRef} loop src={data.music_url || '/music.mp3'} />
 
             <AnimatePresence mode="wait">
                 {!open ? (

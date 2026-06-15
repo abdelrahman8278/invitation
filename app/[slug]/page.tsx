@@ -14,7 +14,8 @@ const invitationPublicFields = `
     location_name,
     location_city,
     template,
-    template_id
+    template_id,
+    music_url
 `
 
 export default async function Page({ params }: SlugPageProps) {
