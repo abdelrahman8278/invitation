@@ -92,5 +92,35 @@ with check (
     )
 );
 
--- Do not add a public select policy for guest_messages.
--- The app reads those rows through server-side API routes.
+-- RPC Function for password-protected guest messages retrieval
+create or replace function public.get_guest_messages(p_slug text, p_password text)
+returns table (
+    id uuid,
+    invitation_id uuid,
+    name text,
+    message text,
+    created_at timestamptz
+)
+language plpgsql
+security definer
+as $$
+declare
+    v_invitation_id uuid;
+begin
+    select i.id into v_invitation_id
+    from public.invitations i
+    where i.slug = p_slug and i.access_password = p_password;
+
+    if v_invitation_id is null then
+        raise exception 'Invalid password or invitation not found';
+    end if;
+
+    return query
+    select gm.id, gm.invitation_id, gm.name, gm.message, gm.created_at
+    from public.guest_messages gm
+    where gm.invitation_id = v_invitation_id
+    order by gm.created_at desc;
+end;
+$$;
+
+grant execute on function public.get_guest_messages(text, text) to anon, authenticated;
