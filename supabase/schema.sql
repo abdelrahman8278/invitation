@@ -3,20 +3,34 @@ create extension if not exists pgcrypto;
 create table if not exists public.invitations (
     id uuid primary key default gen_random_uuid(),
     slug text not null unique,
-    groom text not null,
-    bride text not null,
+    event_type text not null default 'wedding', -- 'wedding', 'engagement', 'katb_ketab', 'henna', 'graduation', 'opening', 'baby_shower'
+    groom text,
+    bride text,
+    host_name text,
+    title text,
     message text not null,
     wedding_date timestamptz not null,
     location_name text not null,
     location_city text not null default '',
+    dress_code text,
+    parents_note text,
     template text,
     template_id text,
     music_url text,
+    photos text[],
     access_password text not null,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
     constraint invitations_slug_format check (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$')
 );
+
+-- Migration for existing tables:
+alter table public.invitations add column if not exists event_type text default 'wedding';
+alter table public.invitations add column if not exists host_name text;
+alter table public.invitations add column if not exists title text;
+alter table public.invitations add column if not exists dress_code text;
+alter table public.invitations add column if not exists parents_note text;
+alter table public.invitations add column if not exists photos text[];
 
 create table if not exists public.guest_messages (
     id uuid primary key default gen_random_uuid(),
@@ -28,9 +42,23 @@ create table if not exists public.guest_messages (
     constraint guest_messages_message_length check (char_length(trim(message)) between 1 and 800)
 );
 
+create table if not exists public.rsvp_responses (
+    id uuid primary key default gen_random_uuid(),
+    invitation_id uuid not null references public.invitations(id) on delete cascade,
+    name text not null,
+    phone text,
+    attending boolean not null default true,
+    guests_count int not null default 1,
+    notes text,
+    created_at timestamptz not null default now(),
+    constraint rsvp_name_length check (char_length(trim(name)) between 1 and 100)
+);
+
 create index if not exists invitations_slug_idx on public.invitations(slug);
 create index if not exists guest_messages_invitation_created_idx
     on public.guest_messages(invitation_id, created_at desc);
+create index if not exists rsvp_responses_invitation_idx
+    on public.rsvp_responses(invitation_id, created_at desc);
 
 create or replace function public.set_updated_at()
 returns trigger
@@ -50,25 +78,34 @@ execute function public.set_updated_at();
 
 alter table public.invitations enable row level security;
 alter table public.guest_messages enable row level security;
+alter table public.rsvp_responses enable row level security;
 
 revoke all on table public.invitations from anon, authenticated;
 revoke all on table public.guest_messages from anon, authenticated;
+revoke all on table public.rsvp_responses from anon, authenticated;
 
 grant select (
     id,
     slug,
+    event_type,
     groom,
     bride,
+    host_name,
+    title,
     message,
     wedding_date,
     location_name,
     location_city,
+    dress_code,
+    parents_note,
     template,
     template_id,
-    music_url
+    music_url,
+    photos
 ) on public.invitations to anon, authenticated;
 
 grant insert (invitation_id, name, message) on public.guest_messages to anon, authenticated;
+grant insert (invitation_id, name, phone, attending, guests_count, notes) on public.rsvp_responses to anon, authenticated;
 
 drop policy if exists "Public can read invitation display data" on public.invitations;
 create policy "Public can read invitation display data"
@@ -89,6 +126,20 @@ with check (
         select 1
         from public.invitations
         where invitations.id = guest_messages.invitation_id
+    )
+);
+
+drop policy if exists "Public can submit RSVP" on public.rsvp_responses;
+create policy "Public can submit RSVP"
+on public.rsvp_responses
+for insert
+to anon, authenticated
+with check (
+    char_length(trim(name)) between 1 and 100
+    and exists (
+        select 1
+        from public.invitations
+        where invitations.id = rsvp_responses.invitation_id
     )
 );
 

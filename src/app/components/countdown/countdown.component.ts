@@ -27,7 +27,7 @@ function calculateTimeLeft(targetDate: Date): TimeLeft {
   template: `
     <div class="my-10 flex flex-col items-center gap-6 {{ ui().countdownText }}">
       <h2 class="max-w-full text-center font-cairo text-xl font-bold leading-relaxed sm:text-2xl">
-        باقي على يومنا الجميل
+        {{ title() || 'باقي على يومنا الجميل' }}
       </h2>
 
       <div class="grid w-full max-w-[34rem] grid-cols-4 gap-2 sm:gap-5" dir="rtl">
@@ -112,6 +112,7 @@ function calculateTimeLeft(targetDate: Date): TimeLeft {
 })
 export class CountdownComponent implements OnInit, OnDestroy {
   date = input<string | undefined>();
+  title = input<string | undefined>();
   template = input.required<InvitationTemplateId>();
 
   ui = computed(() => getInvitationTemplateUi(this.template()));

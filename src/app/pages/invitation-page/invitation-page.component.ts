@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
@@ -6,6 +6,7 @@ import { SupabaseService } from '../../services/supabase.service';
 import { EnvelopeComponent } from '../../components/envelope/envelope.component';
 import { InvitationCardComponent } from '../../components/invitation-card/invitation-card.component';
 import { TemplateSwitcherComponent } from '../../components/template-switcher/template-switcher.component';
+import { AudioPlayerComponent } from '../../components/audio-player/audio-player.component';
 import type { Invitation } from '../../models/invitation.model';
 import {
   getInvitationTemplateId,
@@ -15,6 +16,7 @@ import {
   InvitationTemplateId,
   InvitationThemeMode,
 } from '../../constants/templates';
+import { getEventCategoryConfig } from '../../constants/events';
 
 @Component({
   selector: 'app-invitation-page',
@@ -25,6 +27,7 @@ import {
     EnvelopeComponent,
     InvitationCardComponent,
     TemplateSwitcherComponent,
+    AudioPlayerComponent,
   ],
   template: `
     @if (loading()) {
@@ -47,33 +50,51 @@ import {
     } @else {
       @let inv = invitation()!;
       <main
-        class="min-h-screen flex items-center justify-center relative overflow-hidden px-3 pt-16 pb-28 sm:pb-12 lg:pt-28 {{ ui().pageBackground }}"
+        class="min-h-screen flex items-center justify-center relative overflow-hidden px-2 sm:px-4 pt-16 pb-20 sm:pt-20 sm:pb-24 {{ ui().pageBackground }}"
         [attr.data-invitation-mode]="mode()"
         [ngStyle]="themeVars()"
       >
-        <!-- Background Audio Player -->
-        <audio #audioPlayer loop [src]="inv.music_url || 'music.mp3'"></audio>
+        <!-- Floating Audio Player Control with Equalizer -->
+        <app-audio-player
+          #audioController
+          [src]="inv.music_url || 'music.mp3'"
+        />
 
-        <!-- Template Switcher Bar -->
-        <app-template-switcher [activeTemplate]="currentTemplate()" />
+        <!-- Template and Event Switcher Bar -->
+        <app-template-switcher
+          [activeTemplate]="currentTemplate()"
+          [activeEvent]="currentEventType()"
+        />
 
         <!-- Envelope / Invitation Card Transition -->
         @if (!opened()) {
           <app-envelope
             [template]="currentTemplate()"
-            [groom]="inv.groom"
-            [bride]="inv.bride"
+            [eventType]="currentEventType()"
+            [groom]="inv.groom || ''"
+            [bride]="inv.bride || ''"
+            [hostName]="inv.host_name || inv.groom || ''"
+            [title]="inv.title || ''"
+            [guestName]="guestName()"
             (opened)="handleOpened()"
           />
         } @else {
           <app-invitation-card
             [id]="inv.id"
-            [groom]="inv.groom"
-            [bride]="inv.bride"
+            [slug]="inv.slug"
+            [eventType]="currentEventType()"
+            [groom]="inv.groom || ''"
+            [bride]="inv.bride || ''"
+            [hostName]="inv.host_name || inv.groom || ''"
+            [title]="inv.title || ''"
             [message]="inv.message"
             [date]="inv.wedding_date"
             [location_name]="inv.location_name"
             [location_city]="inv.location_city"
+            [dressCode]="inv.dress_code || ''"
+            [parentsNote]="inv.parents_note || ''"
+            [guestName]="guestName()"
+            [photos]="inv.photos"
             [template]="currentTemplate()"
           />
         }
@@ -82,7 +103,7 @@ import {
         <div class="fixed bottom-5 right-5 z-[60] sm:bottom-6 sm:right-6 animate-fadeIn">
           <a
             [routerLink]="['/', inv.slug, 'messages']"
-            [queryParams]="{ template: currentTemplate(), mode: mode() }"
+            [queryParams]="{ template: currentTemplate(), mode: mode(), event: currentEventType() }"
             class="flex min-h-12 items-center gap-2 rounded-full border px-4 py-3 transition-all duration-300 group sm:px-5 hover:scale-105 active:scale-95 {{ ui().actionButton }}"
             aria-label="رسائل الضيوف"
           >
@@ -106,7 +127,7 @@ import {
   `]
 })
 export class InvitationPageComponent implements OnInit {
-  @ViewChild('audioPlayer') audioPlayerRef?: ElementRef<HTMLAudioElement>;
+  @ViewChild('audioController') audioController?: AudioPlayerComponent;
 
   private route = inject(ActivatedRoute);
   private supabaseService = inject(SupabaseService);
@@ -121,6 +142,8 @@ export class InvitationPageComponent implements OnInit {
   slug = signal<string>('');
   templateQuery = signal<string | null>(null);
   modeQuery = signal<string | null>(null);
+  eventQuery = signal<string | null>(null);
+  guestName = signal<string>('');
 
   currentTemplate = computed<InvitationTemplateId>(() => {
     const query = this.templateQuery();
@@ -129,6 +152,15 @@ export class InvitationPageComponent implements OnInit {
     }
     const inv = this.invitation();
     return getInvitationTemplateId(inv?.template ?? inv?.template_id);
+  });
+
+  currentEventType = computed<string>(() => {
+    const query = this.eventQuery();
+    if (query) {
+      return query;
+    }
+    const inv = this.invitation();
+    return inv?.event_type || 'wedding';
   });
 
   mode = computed<InvitationThemeMode>(() => {
@@ -150,6 +182,15 @@ export class InvitationPageComponent implements OnInit {
     this.route.queryParamMap.subscribe(queryParams => {
       this.templateQuery.set(queryParams.get('template'));
       this.modeQuery.set(queryParams.get('mode'));
+      this.eventQuery.set(queryParams.get('event') || queryParams.get('type'));
+      
+      // Guest Name parameter support (?to=... or ?guest=...)
+      const guest = queryParams.get('to') || queryParams.get('guest');
+      if (guest) {
+        this.guestName.set(guest.replaceAll('_', ' ').replaceAll('-', ' '));
+      } else {
+        this.guestName.set('');
+      }
     });
   }
 
@@ -166,19 +207,21 @@ export class InvitationPageComponent implements OnInit {
     }
 
     this.invitation.set(res.data);
-    this.titleService.setTitle(`${res.data.groom} & ${res.data.bride} | Wedding Invitation`);
+
+    const eventConfig = getEventCategoryConfig(this.currentEventType());
+    const displayTitle = res.data.groom && res.data.bride
+      ? `${res.data.groom} & ${res.data.bride}`
+      : (res.data.host_name || res.data.title || res.data.groom || 'دعوة');
+
+    this.titleService.setTitle(`${displayTitle} | ${eventConfig.name}`);
     this.metaService.updateTag({
       name: 'description',
-      content: `You are cordially invited to the wedding of ${res.data.groom} and ${res.data.bride}`,
+      content: res.data.message || eventConfig.description,
     });
   }
 
   handleOpened(): void {
     this.opened.set(true);
-    if (this.audioPlayerRef?.nativeElement) {
-      this.audioPlayerRef.nativeElement.play().catch(() => {
-        // Autoplay may require user gesture on some browsers
-      });
-    }
+    this.audioController?.play();
   }
 }
