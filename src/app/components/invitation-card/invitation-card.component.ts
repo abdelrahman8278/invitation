@@ -814,7 +814,7 @@ const cardDesigns: Record<InvitationTemplateId, CardDesign> = {
                   [href]="googleMapsDirectionsUrl()"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="inline-flex items-center gap-2 rounded-xl border px-4 py-2 font-cairo text-xs font-bold shadow-sm transition hover:scale-105 active:scale-95 bg-blue-500/15 text-blue-800 dark:text-blue-300 border-blue-400/30"
+                  class="inline-flex items-center gap-2 rounded-xl border px-4 py-2 font-cairo text-xs font-bold shadow-sm transition hover:scale-105 active:scale-95 bg-blue-500/20 text-blue-200 hover:text-white border-blue-400/40"
                 >
                   <span>📍 فتح في خرائط Google</span>
                 </a>
@@ -822,7 +822,7 @@ const cardDesigns: Record<InvitationTemplateId, CardDesign> = {
                   [href]="wazeDirectionsUrl()"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="inline-flex items-center gap-2 rounded-xl border px-4 py-2 font-cairo text-xs font-bold shadow-sm transition hover:scale-105 active:scale-95 bg-cyan-500/15 text-cyan-800 dark:text-cyan-300 border-cyan-400/30"
+                  class="inline-flex items-center gap-2 rounded-xl border px-4 py-2 font-cairo text-xs font-bold shadow-sm transition hover:scale-105 active:scale-95 bg-cyan-500/20 text-cyan-200 hover:text-white border-cyan-400/40"
                 >
                   <span>🚗 التوجيه عبر Waze</span>
                 </a>

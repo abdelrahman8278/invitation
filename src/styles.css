@@ -127,3 +127,15 @@ iframe {
     display: none;
   }
 }
+
+/* Guarantee crisp white/light text in dark mode and dark themes */
+[data-invitation-mode="dark"],
+[data-theme-type="dark"] {
+  color: #f8fafc;
+}
+
+[data-invitation-mode="dark"] p,
+[data-theme-type="dark"] p {
+  color: inherit;
+}
+

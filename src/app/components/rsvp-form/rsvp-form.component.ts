@@ -51,8 +51,8 @@ import { getInvitationTemplateUi, InvitationTemplateId } from '../../constants/t
               (click)="attending.set('yes')"
               class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl border transition-all duration-200 {{
                 attending() === 'yes'
-                  ? 'bg-emerald-500/20 border-emerald-500 text-emerald-800 dark:text-emerald-300 font-bold scale-[1.02] shadow-md ring-2 ring-emerald-400/40'
-                  : 'bg-current/5 border-current/15 opacity-70 hover:opacity-100'
+                  ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 font-bold scale-[1.02] shadow-md ring-2 ring-emerald-400/40'
+                  : 'bg-white/5 border-white/15 text-white/90 hover:bg-white/10 opacity-80 hover:opacity-100'
               }}"
             >
               <span class="text-xl mb-1">💚</span>
@@ -64,8 +64,8 @@ import { getInvitationTemplateUi, InvitationTemplateId } from '../../constants/t
               (click)="attending.set('no')"
               class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl border transition-all duration-200 {{
                 attending() === 'no'
-                  ? 'bg-rose-500/20 border-rose-500 text-rose-800 dark:text-rose-300 font-bold scale-[1.02] shadow-md ring-2 ring-rose-400/40'
-                  : 'bg-current/5 border-current/15 opacity-70 hover:opacity-100'
+                  ? 'bg-rose-500/20 border-rose-400 text-rose-300 font-bold scale-[1.02] shadow-md ring-2 ring-rose-400/40'
+                  : 'bg-white/5 border-white/15 text-white/90 hover:bg-white/10 opacity-80 hover:opacity-100'
               }}"
             >
               <span class="text-xl mb-1">💔</span>

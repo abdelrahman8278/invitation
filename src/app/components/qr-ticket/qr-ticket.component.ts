@@ -23,18 +23,18 @@ import { InvitationTemplateId, getInvitationTemplateUi } from '../../constants/t
       <!-- Modal Ticket Lightbox -->
       @if (isOpen()) {
         <div
-          class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-fadeIn"
+          class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fadeIn"
           (click)="isOpen.set(false)"
         >
           <div
-            class="relative w-full max-w-sm rounded-3xl border p-6 sm:p-8 shadow-2xl text-center {{ ui().formPanel }} text-stone-900 dark:text-stone-100"
+            class="relative w-full max-w-sm rounded-3xl border border-white/20 p-6 sm:p-8 shadow-2xl text-center bg-[#0d1424]/95 text-white backdrop-blur-2xl"
             (click)="$event.stopPropagation()"
           >
             <!-- Close Button -->
             <button
               type="button"
               (click)="isOpen.set(false)"
-              class="absolute left-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-black/10 hover:bg-black/20 text-current"
+              class="absolute left-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white"
             >
               ✕
             </button>
@@ -44,15 +44,15 @@ import { InvitationTemplateId, getInvitationTemplateUi } from '../../constants/t
               <div class="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 px-4 py-1 text-black font-extrabold text-[10px] tracking-wider shadow-md uppercase">
                 <span>✦ VIP INVITATION PASS ✦</span>
               </div>
-              <h3 class="font-playfair text-xl sm:text-2xl font-black mt-3 {{ ui().formTitle }}">
+              <h3 class="font-playfair text-xl sm:text-2xl font-black mt-3 text-amber-300">
                 {{ eventTitle() }}
               </h3>
             </div>
 
             <!-- Guest Name -->
-            <div class="my-3 rounded-2xl bg-current/5 border border-current/15 py-2.5 px-4 backdrop-blur-md">
-              <p class="font-cairo text-xs opacity-65">الاسم / المدعو الكريم:</p>
-              <p class="font-cairo text-base font-extrabold text-amber-500">
+            <div class="my-3 rounded-2xl bg-white/5 border border-white/15 py-2.5 px-4 backdrop-blur-md">
+              <p class="font-cairo text-xs text-slate-300">الاسم / المدعو الكريم:</p>
+              <p class="font-cairo text-base font-extrabold text-amber-400">
                 {{ guestName() || 'ضيف كريم' }}
               </p>
             </div>
@@ -68,11 +68,11 @@ import { InvitationTemplateId, getInvitationTemplateUi } from '../../constants/t
             </div>
 
             <!-- Ticket Code -->
-            <div class="font-montserrat text-[10px] tracking-widest uppercase opacity-50 mb-2">
+            <div class="font-montserrat text-[10px] tracking-widest uppercase text-slate-400 mb-2">
               PASS ID: #{{ slug().toUpperCase() }}-{{ invitationId().substring(0, 6).toUpperCase() }}
             </div>
 
-            <p class="font-cairo text-xs opacity-75 leading-relaxed">
+            <p class="font-cairo text-xs text-slate-200 leading-relaxed">
               يرجى إبراز هذا الرمز عند مدخل القاعة لتسهيل الاستقبال.
             </p>
 

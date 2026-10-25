@@ -189,6 +189,28 @@ export type InvitationThemeMode = 'dark' | 'light';
 
 export const defaultInvitationThemeMode: InvitationThemeMode = 'dark';
 
+export const darkTemplates: readonly InvitationTemplateId[] = [
+  'royal-emerald-gold',
+  'midnight-starlight',
+  'arabic-islamic-gold',
+  'violet-aurora',
+  'dark-elegant-premium',
+  'gradient-wave-modern',
+  'sapphire-midnight-gold',
+  'andalusian-palace-moroccan',
+  'obsidian-black-diamond',
+  'emerald-velvet-botanical',
+  'sunset-desert-glow',
+  'monaco-yacht-glamour',
+  'celestial-moonlight-silver',
+] as const;
+
+export function isDarkTemplate(template?: string | null): boolean {
+  if (!template) return true;
+  return darkTemplates.includes(template as InvitationTemplateId);
+}
+
+
 export type InvitationThemeVars = Record<string, string>;
 
 export const invitationThemeVars: Record<InvitationThemeMode, InvitationThemeVars> = {

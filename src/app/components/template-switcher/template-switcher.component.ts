@@ -4,7 +4,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import {
   invitationTemplates,
   getInvitationTemplateUi,
-  InvitationTemplateId
+  InvitationTemplateId,
+  isDarkTemplate
 } from '../../constants/templates';
 import { eventCategories, EventType } from '../../constants/events';
 
@@ -59,7 +60,9 @@ const themeColors: Record<InvitationTemplateId, ThemeColorInfo> = {
         (click)="toggleOpen()"
         aria-label="تخصيص الثيم والمناسبة"
         [attr.aria-expanded]="isOpen()"
-        class="group flex items-center gap-2.5 rounded-full border px-4 py-2.5 shadow-2xl backdrop-blur-2xl transition-all duration-300 hover:scale-105 active:scale-95 {{ ui().switcher }}"
+        class="group flex items-center gap-2.5 rounded-full border px-4 py-2.5 shadow-2xl backdrop-blur-2xl transition-all duration-300 hover:scale-105 active:scale-95 {{ ui().switcher }} {{
+          isDark() ? 'text-white border-white/30' : ''
+        }}"
       >
         <span class="flex h-6 w-6 items-center justify-center rounded-full bg-amber-400 text-black shadow-md text-xs font-black animate-pulse">
           🎨
@@ -67,7 +70,7 @@ const themeColors: Record<InvitationTemplateId, ThemeColorInfo> = {
         <span class="font-cairo text-xs font-bold sm:text-sm">
           تخصيص الثيم ({{ templates.length }} تصميم)
         </span>
-        <span class="hidden sm:inline-block rounded-full bg-current/15 px-2 py-0.5 text-[10px] font-bold">
+        <span class="hidden sm:inline-block rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold">
           {{ currentThemeBadge() }}
         </span>
       </button>
@@ -76,34 +79,34 @@ const themeColors: Record<InvitationTemplateId, ThemeColorInfo> = {
     <!-- Backdrop Blur Overlay -->
     @if (isOpen()) {
       <div
-        class="fixed inset-0 z-[95] bg-black/60 backdrop-blur-md transition-opacity duration-300 animate-fadeIn"
+        class="fixed inset-0 z-[95] bg-black/65 backdrop-blur-md transition-opacity duration-300 animate-fadeIn"
         (click)="close()"
         aria-hidden="true"
       ></div>
     }
 
-    <!-- Luxury Slide-out / Modal Drawer -->
+    <!-- Luxury Slide-out / Modal Drawer (Always high contrast with crisp white/gold text) -->
     <div
-      class="fixed inset-y-0 left-0 z-[100] flex w-full max-w-md flex-col shadow-2xl backdrop-blur-3xl transition-transform duration-300 ease-out sm:max-w-lg {{ ui().switcher }} {{
+      class="fixed inset-y-0 left-0 z-[100] flex w-full max-w-md flex-col shadow-2xl backdrop-blur-3xl transition-transform duration-300 ease-out sm:max-w-lg bg-[#0c121e]/95 text-white border-r border-white/10 {{
         isOpen() ? 'translate-x-0' : '-translate-x-full'
       }}"
     >
       <!-- Drawer Header -->
-      <div class="flex items-center justify-between border-b border-current/15 px-6 py-5">
+      <div class="flex items-center justify-between border-b border-white/10 px-6 py-5">
         <div class="flex items-center gap-3">
           <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-black shadow-lg font-black text-lg">
             ✨
           </div>
           <div>
-            <h2 class="font-cairo text-base font-extrabold sm:text-lg">لوحة تخصيص الدعوة</h2>
-            <p class="font-cairo text-xs opacity-70">اختر المناسبة والثيم المناسب لذوقك</p>
+            <h2 class="font-cairo text-base font-extrabold sm:text-lg text-white">لوحة تخصيص الدعوة</h2>
+            <p class="font-cairo text-xs text-slate-300 font-medium">اختر المناسبة والثيم المناسب لذوقك</p>
           </div>
         </div>
 
         <button
           type="button"
           (click)="close()"
-          class="flex h-9 w-9 items-center justify-center rounded-full bg-current/10 hover:bg-current/20 transition active:scale-90"
+          class="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition active:scale-90"
           aria-label="إغلاق"
         >
           ✕
@@ -116,11 +119,11 @@ const themeColors: Record<InvitationTemplateId, ThemeColorInfo> = {
         <!-- Section 1: Event Category Selector -->
         <div>
           <div class="mb-3 flex items-center justify-between">
-            <h3 class="font-cairo text-xs font-black uppercase tracking-wider text-amber-500 flex items-center gap-1.5">
+            <h3 class="font-cairo text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
               <span>🎯</span>
               <span>1. نوع المناسبة (Event Type)</span>
             </h3>
-            <span class="font-cairo text-[11px] opacity-60">7 مناسبات</span>
+            <span class="font-cairo text-[11px] text-slate-300 font-semibold">7 مناسبات</span>
           </div>
 
           <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -131,25 +134,25 @@ const themeColors: Record<InvitationTemplateId, ThemeColorInfo> = {
                 (click)="selectEvent(cat.id)"
                 class="flex flex-col items-center justify-center gap-1.5 rounded-2xl border p-3 text-center transition-all duration-200 active:scale-95 {{
                   isCatActive
-                    ? 'border-amber-400 bg-amber-400/20 shadow-lg ring-2 ring-amber-400 font-extrabold'
-                    : 'border-current/15 bg-current/5 hover:bg-current/10 font-bold opacity-80'
+                    ? 'border-amber-400 bg-amber-400/20 text-amber-300 shadow-lg ring-2 ring-amber-400 font-black'
+                    : 'border-white/10 bg-white/[0.05] hover:bg-white/15 text-white font-bold opacity-90 hover:opacity-100'
                 }}"
               >
                 <span class="text-2xl">{{ cat.icon }}</span>
-                <span class="font-cairo text-xs leading-tight font-bold">{{ cat.shortName }}</span>
+                <span class="font-cairo text-xs leading-tight font-bold text-white">{{ cat.shortName }}</span>
               </button>
             }
           </div>
         </div>
 
-        <!-- Section 2: All 20 Luxury Themes Grid -->
+        <!-- Section 2: All 30 Luxury Themes Grid -->
         <div>
           <div class="mb-3 flex items-center justify-between">
-            <h3 class="font-cairo text-xs font-black uppercase tracking-wider text-amber-500 flex items-center gap-1.5">
+            <h3 class="font-cairo text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
               <span>💎</span>
               <span>2. تصاميم وثيمات الدعوة ({{ templates.length }} ثيم)</span>
             </h3>
-            <span class="font-cairo text-[11px] opacity-60">اختر للتطبيق المباشر</span>
+            <span class="font-cairo text-[11px] text-slate-300 font-semibold">اختر للتطبيق المباشر</span>
           </div>
 
           <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -161,8 +164,8 @@ const themeColors: Record<InvitationTemplateId, ThemeColorInfo> = {
                 (click)="selectTemplate(item.id)"
                 class="group relative flex items-start gap-3 rounded-2xl border p-3.5 text-start transition-all duration-200 active:scale-95 {{
                   isThemeActive
-                    ? 'border-amber-400 bg-amber-400/20 shadow-xl ring-2 ring-amber-400'
-                    : 'border-current/15 bg-current/5 hover:bg-current/10'
+                    ? 'border-amber-400 bg-amber-400/20 shadow-xl ring-2 ring-amber-400 text-white'
+                    : 'border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-white hover:border-white/20'
                 }}"
               >
                 <!-- Color Swatch Circle -->
@@ -178,7 +181,7 @@ const themeColors: Record<InvitationTemplateId, ThemeColorInfo> = {
 
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center justify-between gap-1">
-                    <p class="font-cairo text-xs font-black truncate leading-tight">
+                    <p class="font-cairo text-xs font-black truncate leading-tight text-white">
                       {{ item.name }}
                     </p>
                     @if (isThemeActive) {
@@ -187,10 +190,10 @@ const themeColors: Record<InvitationTemplateId, ThemeColorInfo> = {
                       </span>
                     }
                   </div>
-                  <p class="font-montserrat text-[10px] opacity-60 truncate">
+                  <p class="font-montserrat text-[10px] text-amber-300 font-bold truncate mt-0.5">
                     {{ item.shortName }} • {{ colors.badge }}
                   </p>
-                  <p class="font-cairo text-[10px] opacity-75 line-clamp-2 mt-1 leading-relaxed">
+                  <p class="font-cairo text-[10px] text-slate-300 line-clamp-2 mt-1 leading-relaxed font-normal">
                     {{ item.description }}
                   </p>
                 </div>
@@ -202,7 +205,7 @@ const themeColors: Record<InvitationTemplateId, ThemeColorInfo> = {
       </div>
 
       <!-- Drawer Footer -->
-      <div class="border-t border-current/15 p-4 text-center">
+      <div class="border-t border-white/10 p-4 text-center">
         <button
           type="button"
           (click)="close()"
@@ -236,6 +239,8 @@ export class TemplateSwitcherComponent {
   isOpen = signal<boolean>(false);
 
   ui = computed(() => getInvitationTemplateUi(this.activeTemplate()));
+
+  isDark = computed(() => isDarkTemplate(this.activeTemplate()));
 
   currentThemeBadge = computed(() => {
     return themeColors[this.activeTemplate()]?.badge || this.activeTemplate();
