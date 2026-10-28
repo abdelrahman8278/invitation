@@ -242,11 +242,25 @@ export class InvitationPageComponent implements OnInit {
       ? `${res.data.groom} & ${res.data.bride}`
       : (res.data.host_name || res.data.title || res.data.groom || 'دعوة');
 
-    this.titleService.setTitle(`${displayTitle} | ${eventConfig.name}`);
-    this.metaService.updateTag({
-      name: 'description',
-      content: res.data.message || eventConfig.description,
-    });
+    const pageTitle = `${displayTitle} | ${eventConfig.name}`;
+    const pageDescription = res.data.message || eventConfig.description;
+
+    // Resolve preview image: first photo from invitation or default wedding-3.jpeg
+    let previewImage = '/images/wedding-3.jpeg';
+    if (res.data.photos && res.data.photos.length > 0) {
+      const first = res.data.photos[0];
+      previewImage = first.startsWith('http') || first.startsWith('/') ? first : `/images/${first}`;
+    }
+
+    this.titleService.setTitle(pageTitle);
+    this.metaService.updateTag({ name: 'description', content: pageDescription });
+    this.metaService.updateTag({ property: 'og:title', content: pageTitle });
+    this.metaService.updateTag({ property: 'og:description', content: pageDescription });
+    this.metaService.updateTag({ property: 'og:image', content: previewImage });
+    this.metaService.updateTag({ property: 'og:image:secure_url', content: previewImage });
+    this.metaService.updateTag({ name: 'twitter:title', content: pageTitle });
+    this.metaService.updateTag({ name: 'twitter:description', content: pageDescription });
+    this.metaService.updateTag({ name: 'twitter:image', content: previewImage });
   }
 
   handleOpened(): void {
