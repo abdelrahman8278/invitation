@@ -126,9 +126,30 @@ import { resolveFlags, resolveMusicUrl, InvitationFlags } from '../../constants/
           </div>
         }
 
-        <!-- Floating WhatsApp Contact Button (Fixed on scroll, strictly for ahmed-tia) -->
+        <!-- Floating Social Buttons: WhatsApp & Instagram (Fixed on scroll, strictly for ahmed-tia) -->
         @if (isAhmedTia()) {
-          <div class="fixed bottom-5 left-5 z-[70] sm:bottom-6 sm:left-6 animate-fadeIn">
+          <div class="fixed bottom-5 left-5 z-[70] sm:bottom-6 sm:left-6 flex flex-col gap-2.5 sm:gap-3 items-center animate-fadeIn">
+            <!-- Instagram Button -->
+            <a
+              href="https://www.instagram.com/sws.invitation?rpxt=MWpmdHZxdzIyMm1seQ=="
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group relative flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] text-white shadow-[0_8px_25px_rgba(220,39,67,0.45)] hover:shadow-[0_12px_32px_rgba(220,39,67,0.65)] border-2 border-white/40 transition-all duration-300 hover:scale-110 active:scale-95"
+              aria-label="تابعنا على إنستجرام"
+              title="تابعنا على إنستجرام: sws.invitation"
+            >
+              <!-- Instagram SVG Icon -->
+              <svg class="relative z-10 h-6 w-6 sm:h-7 sm:w-7 fill-current drop-shadow-sm transition-transform duration-300 group-hover:scale-110" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+
+              <!-- Floating Tooltip on Desktop Hover -->
+              <span class="pointer-events-none absolute left-full ml-3 whitespace-nowrap rounded-xl bg-slate-950/90 border border-slate-700/80 px-3 py-1.5 text-xs font-bold text-white shadow-xl backdrop-blur-md opacity-0 transition-all duration-200 group-hover:opacity-100 hidden sm:block">
+                تابعنا على إنستجرام 📸
+              </span>
+            </a>
+
+            <!-- WhatsApp Button -->
             <a
               href="https://wa.me/201007992310"
               target="_blank"
