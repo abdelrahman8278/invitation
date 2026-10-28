@@ -137,14 +137,14 @@ export class SupabaseService {
     password: string
   ): Promise<{ messages: GuestMessage[]; error: string | null }> {
     try {
-      const trimmedSlug = slug.trim();
-      const trimmedPassword = password.trim();
+      const trimmedSlug = (slug || '').trim();
+      const trimmedPassword = (password || '').trim();
 
       if (!trimmedSlug || !trimmedPassword) {
         return { messages: [], error: 'كلمة المرور واسم الرابط مطلوبان' };
       }
 
-      // First try calling the get_guest_messages RPC function
+      // 1. Try calling the get_guest_messages RPC function
       const { data: rpcData, error: rpcError } = await this.client.rpc('get_guest_messages', {
         p_slug: trimmedSlug,
         p_password: trimmedPassword,
@@ -154,28 +154,46 @@ export class SupabaseService {
         return { messages: rpcData as GuestMessage[], error: null };
       }
 
-      // Fallback: direct query
+      // If the RPC rejected the password with an exception
+      if (rpcError && (rpcError.code === 'P0001' || rpcError.message?.includes('كلمة المرور') || rpcError.message?.includes('الرقم السري'))) {
+        return { messages: [], error: 'الرقم السري غير صحيح. يرجى التأكد والمحاولة مرة أخرى' };
+      }
+
+      // 2. Fallback: check invitation directly in database
       const { data: invitation } = await this.client
         .from('invitations')
-        .select('id')
+        .select('id, access_password')
         .eq('slug', trimmedSlug)
         .single();
 
-      if (!invitation) {
-        return { messages: [], error: 'الدعوة غير موجودة' };
+      if (invitation) {
+        const dbPassword = (invitation.access_password || '').trim();
+        if (dbPassword && dbPassword !== trimmedPassword) {
+          return { messages: [], error: 'الرقم السري غير صحيح. يرجى التأكد والمحاولة مرة أخرى' };
+        }
+
+        const { data: messages, error: messagesError } = await this.client
+          .from('guest_messages')
+          .select('id, invitation_id, name, message, created_at')
+          .eq('invitation_id', invitation.id)
+          .order('created_at', { ascending: false });
+
+        if (messagesError) {
+          return { messages: [], error: messagesError.message };
+        }
+
+        return { messages: (messages as GuestMessage[]) || [], error: null };
       }
 
-      const { data: messages, error: messagesError } = await this.client
-        .from('guest_messages')
-        .select('id, invitation_id, name, message, created_at')
-        .eq('invitation_id', invitation.id)
-        .order('created_at', { ascending: false });
-
-      if (messagesError) {
-        return { messages: [], error: rpcError?.message || messagesError.message };
+      // 3. Demo/mock slugs fallback (only allows '123456')
+      if (trimmedSlug === 'ahmed-tia' || trimmedSlug === 'demo' || trimmedSlug === 'alex-sarah') {
+        if (trimmedPassword === '123456') {
+          return { messages: [], error: null };
+        }
+        return { messages: [], error: 'الرقم السري غير صحيح. (الرقم التجريبي: 123456)' };
       }
 
-      return { messages: (messages as GuestMessage[]) || [], error: null };
+      return { messages: [], error: 'الدعوة غير موجودة' };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Unknown error occurred';
       return { messages: [], error: msg };
@@ -194,7 +212,7 @@ export class SupabaseService {
     }
 
     try {
-      // First try calling the get_rsvp_responses RPC function
+      // 1. First try calling the get_rsvp_responses RPC function
       const { data: rpcData, error: rpcError } = await this.client.rpc('get_rsvp_responses', {
         p_slug: trimmedSlug,
         p_password: trimmedPassword,
@@ -204,44 +222,48 @@ export class SupabaseService {
         return { responses: rpcData as RsvpResponse[], error: null };
       }
 
-      // Preview & local demo fallback for default passwords
-      if (trimmedPassword === '123456' && (trimmedSlug === 'ahmed-tia' || trimmedSlug === 'demo' || trimmedSlug === 'kareem-samira' || rpcError)) {
-        return { responses: this.getMockRsvpResponses(trimmedSlug), error: null };
+      // If the RPC rejected the password with an exception
+      if (rpcError && (rpcError.code === 'P0001' || rpcError.message?.includes('كلمة المرور') || rpcError.message?.includes('الرقم السري'))) {
+        return { responses: [], error: 'الرقم السري غير صحيح. يرجى التأكد والمحاولة مرة أخرى' };
       }
 
-      // Fallback: direct query
+      // 2. Fallback: check invitation directly in database
       const { data: invitation } = await this.client
         .from('invitations')
-        .select('id')
+        .select('id, access_password')
         .eq('slug', trimmedSlug)
         .single();
 
-      if (!invitation) {
+      if (invitation) {
+        // Strict password check against database record
+        const dbPassword = (invitation.access_password || '').trim();
+        if (dbPassword && dbPassword !== trimmedPassword) {
+          return { responses: [], error: 'الرقم السري غير صحيح. يرجى التأكد والمحاولة مرة أخرى' };
+        }
+
+        const { data: responses, error: rsvpError } = await this.client
+          .from('rsvp_responses')
+          .select('id, invitation_id, name, phone, attending, guests_count, notes, created_at')
+          .eq('invitation_id', invitation.id)
+          .order('created_at', { ascending: false });
+
+        if (rsvpError) {
+          return { responses: [], error: rsvpError.message };
+        }
+
+        return { responses: (responses as RsvpResponse[]) || [], error: null };
+      }
+
+      // 3. Demo/mock fallback for non-database preview slugs (e.g. ahmed-tia)
+      if (trimmedSlug === 'ahmed-tia' || trimmedSlug === 'demo' || trimmedSlug === 'alex-sarah') {
         if (trimmedPassword === '123456') {
           return { responses: this.getMockRsvpResponses(trimmedSlug), error: null };
         }
-        return { responses: [], error: 'الدعوة غير موجودة' };
+        return { responses: [], error: 'الرقم السري غير صحيح. (الرقم التجريبي: 123456)' };
       }
 
-      const { data: responses, error: rsvpError } = await this.client
-        .from('rsvp_responses')
-        .select('id, invitation_id, name, phone, attending, guests_count, notes, created_at')
-        .eq('invitation_id', invitation.id)
-        .order('created_at', { ascending: false });
-
-      if (rsvpError) {
-        // If RPC is not yet created in Supabase SQL editor, provide sample data for password '123456'
-        if (trimmedPassword === '123456') {
-          return { responses: this.getMockRsvpResponses(trimmedSlug), error: null };
-        }
-        return { responses: [], error: rpcError?.message || rsvpError.message };
-      }
-
-      return { responses: (responses as RsvpResponse[]) || [], error: null };
+      return { responses: [], error: 'الدعوة غير موجودة' };
     } catch (err: unknown) {
-      if (trimmedPassword === '123456') {
-        return { responses: this.getMockRsvpResponses(trimmedSlug), error: null };
-      }
       const msg = err instanceof Error ? err.message : 'Unknown error occurred';
       return { responses: [], error: msg };
     }
