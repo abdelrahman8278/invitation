@@ -245,11 +245,19 @@ export class InvitationPageComponent implements OnInit {
     const pageTitle = `${displayTitle} | ${eventConfig.name}`;
     const pageDescription = res.data.message || eventConfig.description;
 
-    // Resolve preview image: first photo from invitation or default wedding-3.jpeg
-    let previewImage = '/images/wedding-3.jpeg';
+    // Resolve preview image: ensure full absolute URL for WhatsApp/Facebook crawler
+    const baseUrl = typeof window !== 'undefined' && window.location.origin
+      ? window.location.origin
+      : 'https://sws-invitation.vercel.app';
+    let previewImage = `${baseUrl}/images/wedding-og.jpg`;
     if (res.data.photos && res.data.photos.length > 0) {
       const first = res.data.photos[0];
-      previewImage = first.startsWith('http') || first.startsWith('/') ? first : `/images/${first}`;
+      if (first.startsWith('http')) {
+        previewImage = first;
+      } else {
+        const cleanPath = first.startsWith('/') ? first : `/images/${first}`;
+        previewImage = `${baseUrl}${cleanPath}`;
+      }
     }
 
     this.titleService.setTitle(pageTitle);
