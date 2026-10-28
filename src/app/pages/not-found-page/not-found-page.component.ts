@@ -15,7 +15,7 @@ import { RouterLink } from '@angular/router';
           لم يتم العثور على الصفحة المطلوبة. يرجى التأكد من صحة الرابط.
         </p>
         <a
-          routerLink="/alex-sarah"
+          routerLink="/ahmed-tia"
           class="inline-block px-6 py-3 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-200 font-cairo text-sm font-bold transition hover:bg-amber-500/30"
         >
           الذهاب للدعوة الرئيسية

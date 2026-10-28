@@ -20,7 +20,7 @@ import { getInvitationTemplateUi, InvitationTemplateId } from '../../constants/t
       </div>
 
       <div class="space-y-4 rounded-3xl border p-5 sm:p-7 {{ ui().formPanel }} shadow-xl">
-        <p class="text-center font-cairo text-sm font-semibold opacity-80 mb-4">
+        <p class="text-center font-cairo text-sm font-bold mb-4" [ngClass]="isLight() ? 'text-[#3e190e]' : 'text-stone-200'">
           يسعدنا تأكيد حضوركم لمشاركتنا أجمل اللحظات
         </p>
 
@@ -32,13 +32,14 @@ import { getInvitationTemplateUi, InvitationTemplateId } from '../../constants/t
             <h3 class="font-cairo text-lg font-bold {{ ui().countdownText }}">
               {{ attending() === 'yes' ? 'تم تأكيد حضورك بنجاح!' : 'شكراً لإبلاغنا، تمنينا تواجدكم!' }}
             </h3>
-            <p class="font-cairo text-xs sm:text-sm opacity-75">
+            <p class="font-cairo text-xs sm:text-sm" [ngClass]="isLight() ? 'text-[#482114]' : 'opacity-75'">
               {{ attending() === 'yes' ? 'نتطلع لرؤيتكم والاحتفال معكم بكل حب وفرحة.' : 'سعدنا بتواصلكم ونتمنى لكم دوام الصحة والسعادة.' }}
             </p>
             <button
               type="button"
               (click)="submitted.set(false)"
-              class="mt-2 text-xs font-cairo underline opacity-60 hover:opacity-100"
+              class="mt-2 text-xs font-cairo underline font-bold"
+              [ngClass]="isLight() ? 'text-[#c97d60]' : 'opacity-60 hover:opacity-100'"
             >
               تعديل الرد
             </button>
@@ -49,27 +50,33 @@ import { getInvitationTemplateUi, InvitationTemplateId } from '../../constants/t
             <button
               type="button"
               (click)="attending.set('yes')"
-              class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl border transition-all duration-200 {{
-                attending() === 'yes'
-                  ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 font-bold scale-[1.02] shadow-md ring-2 ring-emerald-400/40'
-                  : 'bg-white/5 border-white/15 text-white/90 hover:bg-white/10 opacity-80 hover:opacity-100'
-              }}"
+              class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl border transition-all duration-200 shadow-sm"
+              [ngClass]="attending() === 'yes'
+                ? (isLight()
+                    ? 'bg-emerald-100/90 border-emerald-600 text-emerald-950 font-black scale-[1.02] shadow-md ring-2 ring-emerald-600/40'
+                    : 'bg-emerald-500/25 border-emerald-400 text-emerald-200 font-black scale-[1.02] shadow-md ring-2 ring-emerald-400/40')
+                : (isLight()
+                    ? 'bg-white border-stone-300 text-stone-800 font-bold hover:bg-stone-50'
+                    : 'bg-white/10 border-white/20 text-stone-200 font-bold hover:bg-white/15')"
             >
               <span class="text-xl mb-1">💚</span>
-              <span class="font-cairo text-xs sm:text-sm">سأحضر بالتأكيد</span>
+              <span class="font-cairo text-xs sm:text-sm font-black">سأحضر بالتأكيد</span>
             </button>
 
             <button
               type="button"
               (click)="attending.set('no')"
-              class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl border transition-all duration-200 {{
-                attending() === 'no'
-                  ? 'bg-rose-500/20 border-rose-400 text-rose-300 font-bold scale-[1.02] shadow-md ring-2 ring-rose-400/40'
-                  : 'bg-white/5 border-white/15 text-white/90 hover:bg-white/10 opacity-80 hover:opacity-100'
-              }}"
+              class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl border transition-all duration-200 shadow-sm"
+              [ngClass]="attending() === 'no'
+                ? (isLight()
+                    ? 'bg-rose-100/90 border-rose-600 text-rose-950 font-black scale-[1.02] shadow-md ring-2 ring-rose-600/40'
+                    : 'bg-rose-500/25 border-rose-400 text-rose-200 font-black scale-[1.02] shadow-md ring-2 ring-rose-400/40')
+                : (isLight()
+                    ? 'bg-white border-stone-300 text-stone-800 font-bold hover:bg-stone-50'
+                    : 'bg-white/10 border-white/20 text-stone-200 font-bold hover:bg-white/15')"
             >
               <span class="text-xl mb-1">💔</span>
-              <span class="font-cairo text-xs sm:text-sm">أعتذر عن الحضور</span>
+              <span class="font-cairo text-xs sm:text-sm font-black">أعتذر عن الحضور</span>
             </button>
           </div>
 
@@ -101,7 +108,7 @@ import { getInvitationTemplateUi, InvitationTemplateId } from '../../constants/t
           <!-- Companion Count (If Attending) -->
           @if (attending() === 'yes') {
             <div class="space-y-1.5 animate-fadeIn">
-              <label class="font-cairo text-xs font-semibold opacity-80 block">
+              <label class="font-cairo text-xs font-bold block" [ngClass]="isLight() ? 'text-[#3e190e]' : 'opacity-80'">
                 عدد الحضور الكلي (شاملاً حضرتك):
               </label>
               <div class="grid grid-cols-5 gap-2">
@@ -175,6 +182,22 @@ export class RsvpFormComponent implements OnInit {
   private supabaseService = inject(SupabaseService);
 
   ui = computed(() => getInvitationTemplateUi(this.template()));
+
+  isLight = computed(() => {
+    const t = this.template() || '';
+    return [
+      'bohemian-terracotta',
+      'rose-gold-blush',
+      'pearl-minimalist',
+      'botanical-watercolor',
+      'sage-save-date',
+      'pink-photo-floral',
+      'floral-watercolor',
+      'champagne-royal-silk',
+      'vintage-victorian-lace',
+      'minimalist-japanese',
+    ].includes(t);
+  });
 
   name = signal<string>('');
   phone = signal<string>('');

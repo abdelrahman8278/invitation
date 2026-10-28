@@ -17,6 +17,7 @@ import {
   InvitationThemeMode,
 } from '../../constants/templates';
 import { getEventCategoryConfig } from '../../constants/events';
+import { resolveFlags, resolveMusicUrl, InvitationFlags } from '../../constants/defaults';
 
 @Component({
   selector: 'app-invitation-page',
@@ -54,20 +55,24 @@ import { getEventCategoryConfig } from '../../constants/events';
         [attr.data-invitation-mode]="mode()"
         [ngStyle]="themeVars()"
       >
-        <!-- Floating Audio Player Control with Equalizer -->
-        <app-audio-player
-          #audioController
-          [src]="inv.music_url || 'music.mp3'"
-        />
+        <!-- Floating Audio Player Control with Equalizer (Controlled by Flag) -->
+        @if (flags().showMusic) {
+          <app-audio-player
+            #audioController
+            [src]="resolveMusicUrl(inv.music_url)"
+          />
+        }
 
-        <!-- Template and Event Switcher Bar -->
-        <app-template-switcher
-          [activeTemplate]="currentTemplate()"
-          [activeEvent]="currentEventType()"
-        />
+        <!-- Template and Event Switcher Bar (Only visible for default client: ahmed-tia) -->
+        @if (isDefaultClient()) {
+          <app-template-switcher
+            [activeTemplate]="currentTemplate()"
+            [activeEvent]="currentEventType()"
+          />
+        }
 
-        <!-- Envelope / Invitation Card Transition -->
-        @if (!opened()) {
+        <!-- Envelope / Invitation Card Transition (Envelope Controlled by Flag) -->
+        @if (flags().showEnvelope && !opened()) {
           <app-envelope
             [template]="currentTemplate()"
             [eventType]="currentEventType()"
@@ -87,32 +92,39 @@ import { getEventCategoryConfig } from '../../constants/events';
             [bride]="inv.bride || ''"
             [hostName]="inv.host_name || inv.groom || ''"
             [title]="inv.title || ''"
+            [eyebrowText]="inv.eyebrow_text"
+            [quranVerse]="inv.quran_verse"
             [message]="inv.message"
             [date]="inv.wedding_date"
             [location_name]="inv.location_name"
             [location_city]="inv.location_city"
+            [googleMapsUrl]="inv.google_maps_url"
+            [wazeUrl]="inv.waze_url"
             [dressCode]="inv.dress_code || ''"
             [parentsNote]="inv.parents_note || ''"
             [guestName]="guestName()"
             [photos]="inv.photos"
             [template]="currentTemplate()"
+            [flags]="flags()"
           />
         }
 
-        <!-- Floating Button: Guest Messages Link -->
-        <div class="fixed bottom-5 right-5 z-[60] sm:bottom-6 sm:right-6 animate-fadeIn">
-          <a
-            [routerLink]="['/', inv.slug, 'messages']"
-            [queryParams]="{ template: currentTemplate(), mode: mode(), event: currentEventType() }"
-            class="flex min-h-12 items-center gap-2 rounded-full border px-4 py-3 transition-all duration-300 group sm:px-5 hover:scale-105 active:scale-95 {{ ui().actionButton }}"
-            aria-label="رسائل الضيوف"
-          >
-            <svg class="h-5 w-5 fill-current transition-transform duration-300 group-hover:scale-110 {{ ui().actionIcon }}" viewBox="0 0 24 24">
-              <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-            </svg>
-            <span class="font-cairo text-sm font-bold">رسائل الضيوف</span>
-          </a>
-        </div>
+        <!-- Floating Button: Guest Messages Link (Controlled by Flag) -->
+        @if (flags().showGuestWishes) {
+          <div class="fixed bottom-5 right-5 z-[60] sm:bottom-6 sm:right-6 animate-fadeIn">
+            <a
+              [routerLink]="['/', inv.slug, 'messages']"
+              [queryParams]="{ template: currentTemplate(), mode: mode(), event: currentEventType() }"
+              class="flex min-h-12 items-center gap-2 rounded-full border px-4 py-3 transition-all duration-300 group sm:px-5 hover:scale-105 active:scale-95 {{ ui().actionButton }}"
+              aria-label="رسائل الضيوف"
+            >
+              <svg class="h-5 w-5 fill-current transition-transform duration-300 group-hover:scale-110 {{ ui().actionIcon }}" viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+              </svg>
+              <span class="font-cairo text-sm font-bold">رسائل الضيوف</span>
+            </a>
+          </div>
+        }
       </main>
     }
   `,
@@ -132,7 +144,9 @@ export class InvitationPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private supabaseService = inject(SupabaseService);
   private titleService = inject(Title);
-  private metaService = inject(Meta);
+  metaService = inject(Meta);
+
+  resolveMusicUrl = resolveMusicUrl;
 
   invitation = signal<Invitation | null>(null);
   loading = signal<boolean>(true);
@@ -144,6 +158,16 @@ export class InvitationPageComponent implements OnInit {
   modeQuery = signal<string | null>(null);
   eventQuery = signal<string | null>(null);
   guestName = signal<string>('');
+
+  // Resolved flags for current invitation
+  flags = computed<Required<InvitationFlags>>(() => {
+    return resolveFlags(this.invitation()?.flags);
+  });
+
+  isDefaultClient = computed<boolean>(() => {
+    const s = this.slug();
+    return s === 'ahmed-tia' || s === 'demo';
+  });
 
   currentTemplate = computed<InvitationTemplateId>(() => {
     const query = this.templateQuery();
@@ -207,6 +231,11 @@ export class InvitationPageComponent implements OnInit {
     }
 
     this.invitation.set(res.data);
+
+    // If envelope flag is turned off, mark as opened immediately
+    if (res.data.flags && res.data.flags.showEnvelope === false) {
+      this.opened.set(true);
+    }
 
     const eventConfig = getEventCategoryConfig(this.currentEventType());
     const displayTitle = res.data.groom && res.data.bride

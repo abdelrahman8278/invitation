@@ -9,6 +9,7 @@ import { QrTicketComponent } from '../qr-ticket/qr-ticket.component';
 import { PhotoGalleryComponent } from '../photo-gallery/photo-gallery.component';
 import { InvitationTemplateId } from '../../constants/templates';
 import { getEventCategoryConfig } from '../../constants/events';
+import { resolveFlags, resolveQuote, resolvePhotoList, InvitationFlags } from '../../constants/defaults';
 
 interface CardDesign {
   frame: string;
@@ -651,104 +652,113 @@ const cardDesigns: Record<InvitationTemplateId, CardDesign> = {
           </div>
 
           <!-- Header Eyebrow / Slogan -->
-          <div class="mb-6">
-            <p class="font-montserrat uppercase text-xs sm:text-sm font-bold tracking-widest mb-2 {{ design().eyebrow }}">
-              {{ eventConfig().defaultEyebrow }}
-            </p>
-            <div class="mx-auto h-0.5 w-16 bg-amber-400/60 rounded-full"></div>
-          </div>
-
-          <!-- Quranic / Poetic Verse Banner (For Couples / Wedding / Engagement) -->
-          @if (isCouplesEvent()) {
-            <div class="mx-auto mb-8 max-w-xl rounded-2xl border-2 border-amber-400/30 bg-black/15 px-6 py-4 backdrop-blur-md shadow-md relative">
-              <span class="absolute -top-3 right-6 rounded-full bg-amber-400 text-black px-3 py-0.5 text-[10px] font-black shadow">
-                📖 آية كريمة
-              </span>
-              <p class="font-amiri text-base sm:text-lg italic leading-relaxed opacity-95 pt-1">
-                « وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً »
+          @if (resolvedFlags().showEyebrow) {
+            <div class="mb-6">
+              <p class="font-montserrat uppercase text-xs sm:text-sm font-bold tracking-widest mb-2 {{ design().eyebrow }}">
+                {{ resolvedEyebrow() }}
               </p>
+              <div class="mx-auto h-0.5 w-16 bg-amber-400/60 rounded-full"></div>
             </div>
           }
 
-          <!-- Parents Note (if present) -->
-          @if (parentsNote()) {
+          <!-- Quranic / Poetic Verse Banner -->
+          @if (resolvedFlags().showQuranVerse) {
+            <div class="mx-auto mb-8 max-w-xl rounded-2xl border-2 border-amber-400/30 bg-black/15 px-6 py-4 backdrop-blur-md shadow-md relative">
+              <span class="absolute -top-3 right-6 rounded-full bg-amber-400 text-black px-3 py-0.5 text-[10px] font-black shadow">
+                {{ resolvedQuote().badge }}
+              </span>
+              <p class="font-amiri text-base sm:text-lg italic leading-relaxed opacity-95 pt-1">
+                {{ resolvedQuote().quote }}
+              </p>
+              @if (resolvedQuote().source) {
+                <span class="block mt-1 text-[11px] font-cairo opacity-70">{{ resolvedQuote().source }}</span>
+              }
+            </div>
+          }
+
+          <!-- Parents Note (if present and flag enabled) -->
+          @if (resolvedFlags().showParentsNote && parentsNote()) {
             <p class="mb-6 font-cairo text-sm sm:text-base font-bold opacity-90 leading-relaxed" dir="rtl">
               {{ parentsNote() }}
             </p>
           }
 
           <!-- Main Dynamic Title / Names Section -->
-          <div class="my-6">
-            @if (isCouplesEvent()) {
-              <div class="flex flex-col items-center justify-center gap-1 sm:gap-2">
-                <h1 class="text-4xl sm:text-6xl md:text-7xl {{ design().heading }} tracking-wide leading-tight">
-                  {{ groom() }}
-                </h1>
-                <div class="my-3 flex items-center justify-center gap-3">
-                  <div class="h-px w-14 bg-amber-400/60"></div>
-                  <span class="flex h-11 w-11 items-center justify-center rounded-full border-2 border-amber-400 bg-amber-400/20 text-xl font-bold shadow-lg {{ design().ampersand }}">
-                    &
-                  </span>
-                  <div class="h-px w-14 bg-amber-400/60"></div>
+          @if (resolvedFlags().showNames) {
+            <div class="my-6">
+              @if (isCouplesEvent()) {
+                <div class="flex flex-col items-center justify-center gap-1 sm:gap-2">
+                  <h1 class="text-4xl sm:text-6xl md:text-7xl {{ design().heading }} tracking-wide leading-tight">
+                    {{ groom() }}
+                  </h1>
+                  <div class="my-3 flex items-center justify-center gap-3">
+                    <div class="h-px w-14 bg-amber-400/60"></div>
+                    <span class="flex h-11 w-11 items-center justify-center rounded-full border-2 border-amber-400 bg-amber-400/20 text-xl font-bold shadow-lg {{ design().ampersand }}">
+                      &
+                    </span>
+                    <div class="h-px w-14 bg-amber-400/60"></div>
+                  </div>
+                  <h1 class="text-4xl sm:text-6xl md:text-7xl {{ design().heading }} tracking-wide leading-tight">
+                    {{ bride() }}
+                  </h1>
                 </div>
-                <h1 class="text-4xl sm:text-6xl md:text-7xl {{ design().heading }} tracking-wide leading-tight">
-                  {{ bride() }}
-                </h1>
-              </div>
-            } @else if (eventType() === 'henna') {
-              <div class="space-y-2">
-                <span class="inline-block font-aref text-2xl font-bold opacity-80">ليلة حنة العروسة الجميلة</span>
-                <h1 class="text-4xl sm:text-6xl {{ design().heading }}">
-                  {{ bride() || hostName() }}
-                </h1>
-              </div>
-            } @else if (eventType() === 'graduation') {
-              <div class="space-y-3">
-                <div class="inline-flex items-center gap-2 rounded-full border border-amber-400/50 bg-amber-400/15 px-5 py-1.5 font-cairo text-xs sm:text-sm font-black text-amber-400 shadow-md">
-                  <span>🎓</span>
-                  <span>مبارك التخرج والنجاح الباهر</span>
+              } @else if (eventType() === 'henna') {
+                <div class="space-y-2">
+                  <span class="inline-block font-aref text-2xl font-bold opacity-80">ليلة حنة العروسة الجميلة</span>
+                  <h1 class="text-4xl sm:text-6xl {{ design().heading }}">
+                    {{ bride() || hostName() }}
+                  </h1>
                 </div>
-                <h1 class="text-4xl sm:text-6xl md:text-7xl {{ design().heading }}">
+              } @else if (eventType() === 'graduation') {
+                <div class="space-y-3">
+                  <div class="inline-flex items-center gap-2 rounded-full border border-amber-400/50 bg-amber-400/15 px-5 py-1.5 font-cairo text-xs sm:text-sm font-black text-amber-400 shadow-md">
+                    <span>🎓</span>
+                    <span>مبارك التخرج والنجاح الباهر</span>
+                  </div>
+                  <h1 class="text-4xl sm:text-6xl md:text-7xl {{ design().heading }}">
+                    {{ hostName() || groom() }}
+                  </h1>
+                  @if (title()) {
+                    <p class="font-cairo text-base sm:text-lg font-extrabold text-amber-400 mt-1">
+                      {{ title() }}
+                    </p>
+                  }
+                </div>
+              } @else if (eventType() === 'opening') {
+                <div class="space-y-2">
+                  <span class="inline-block font-cairo text-lg font-bold opacity-80">الافتتاح الرسمي لـ</span>
+                  <h1 class="text-3xl sm:text-5xl md:text-6xl {{ design().heading }}">
+                    {{ title() || hostName() }}
+                  </h1>
+                </div>
+              } @else if (eventType() === 'baby_shower') {
+                <div class="space-y-2">
+                  <span class="inline-block font-aref text-2xl font-bold opacity-80">أهلاً بقدوم أميرنا الغالي</span>
+                  <h1 class="text-4xl sm:text-6xl {{ design().heading }}">
+                    {{ hostName() }}
+                  </h1>
+                </div>
+              } @else {
+                <h1 class="text-4xl sm:text-7xl {{ design().heading }}">
                   {{ hostName() || groom() }}
                 </h1>
-                @if (title()) {
-                  <p class="font-cairo text-base sm:text-lg font-extrabold text-amber-400 mt-1">
-                    {{ title() }}
-                  </p>
-                }
-              </div>
-            } @else if (eventType() === 'opening') {
-              <div class="space-y-2">
-                <span class="inline-block font-cairo text-lg font-bold opacity-80">الافتتاح الرسمي لـ</span>
-                <h1 class="text-3xl sm:text-5xl md:text-6xl {{ design().heading }}">
-                  {{ title() || hostName() }}
-                </h1>
-              </div>
-            } @else if (eventType() === 'baby_shower') {
-              <div class="space-y-2">
-                <span class="inline-block font-aref text-2xl font-bold opacity-80">أهلاً بقدوم أميرنا الغالي</span>
-                <h1 class="text-4xl sm:text-6xl {{ design().heading }}">
-                  {{ hostName() }}
-                </h1>
-              </div>
-            } @else {
-              <h1 class="text-4xl sm:text-7xl {{ design().heading }}">
-                {{ hostName() || groom() }}
-              </h1>
-            }
-          </div>
+              }
+            </div>
+          }
 
           <!-- Message Block (Prestigious Card Frame) -->
-          <div class="my-8 rounded-2xl border border-current/20 bg-current/5 p-6 sm:p-8 backdrop-blur-md shadow-inner">
-            <p class="font-cairo text-base sm:text-xl {{ design().message }} leading-relaxed whitespace-pre-line font-medium" dir="rtl">
-              {{ message() }}
-            </p>
-            <div class="mt-6 flex items-center justify-center gap-4">
-              <div class="h-px w-12 bg-amber-400/50"></div>
-              <div class="w-2 h-2 rounded-full bg-amber-400 shadow"></div>
-              <div class="h-px w-12 bg-amber-400/50"></div>
+          @if (resolvedFlags().showMessage) {
+            <div class="my-8 rounded-2xl border border-current/20 bg-current/5 p-6 sm:p-8 backdrop-blur-md shadow-inner">
+              <p class="font-cairo text-base sm:text-xl {{ design().message }} leading-relaxed whitespace-pre-line font-medium" dir="rtl">
+                {{ message() }}
+              </p>
+              <div class="mt-6 flex items-center justify-center gap-4">
+                <div class="h-px w-12 bg-amber-400/50"></div>
+                <div class="w-2 h-2 rounded-full bg-amber-400 shadow"></div>
+                <div class="h-px w-12 bg-amber-400/50"></div>
+              </div>
             </div>
-          </div>
+          }
 
           <!-- Date Container -->
           <div class="my-8 rounded-2xl border px-6 py-6 {{ design().dateBox }}">
@@ -761,15 +771,18 @@ const cardDesigns: Record<InvitationTemplateId, CardDesign> = {
           </div>
 
           <!-- Feature 1: Add to Google / Apple Calendar Button -->
-          <app-calendar-button
-            [title]="displayTitle()"
-            [description]="message()"
-            [location]="location_name() + ' - ' + location_city()"
-            [startDate]="date()"
-          />
+          @if (resolvedFlags().showCalendar) {
+            <app-calendar-button
+              [title]="displayTitle()"
+              [description]="message()"
+              [location]="location_name() + ' - ' + location_city()"
+              [startDate]="date()"
+              [template]="template()"
+            />
+          }
 
-          <!-- Dress Code Badge (if present) -->
-          @if (dressCode()) {
+          <!-- Dress Code Badge (if present and flag enabled) -->
+          @if (resolvedFlags().showDressCode && dressCode()) {
             <div class="my-6 inline-flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-current/5 px-6 py-3 shadow-md backdrop-blur-md">
               <span class="text-lg">👔</span>
               <p class="font-cairo text-xs sm:text-sm font-bold">
@@ -779,77 +792,89 @@ const cardDesigns: Record<InvitationTemplateId, CardDesign> = {
           }
 
           <!-- Countdown -->
-          <div class="my-8">
-            <app-countdown [date]="date()" [title]="eventConfig().countdownTitle" [template]="template()" />
-          </div>
+          @if (resolvedFlags().showCountdown) {
+            <div class="my-8">
+              <app-countdown [date]="date()" [title]="eventConfig().countdownTitle" [template]="template()" />
+            </div>
+          }
 
           <!-- Feature 2: Smart QR Code Entry Pass -->
-          <app-qr-ticket
-            [invitationId]="id()"
-            [slug]="slug()"
-            [eventTitle]="displayTitle()"
-            [guestName]="guestName()"
-            [template]="template()"
-          />
+          @if (resolvedFlags().showQrPass) {
+            <app-qr-ticket
+              [invitationId]="id()"
+              [slug]="slug()"
+              [eventTitle]="displayTitle()"
+              [guestName]="guestName()"
+              [template]="template()"
+            />
+          }
 
           <!-- Feature 3: Photo Gallery Showcase -->
-          <app-photo-gallery
-            [photos]="demoPhotos"
-            [template]="template()"
-          />
+          @if (resolvedFlags().showGallery) {
+            <app-photo-gallery
+              [photos]="effectivePhotos()"
+              [template]="template()"
+            />
+          }
 
           <!-- Location & Map with GPS Direct Links -->
-          <div class="mt-12">
-            <div class="relative p-6 sm:p-8 border shadow-sm overflow-hidden {{ design().map }}">
-              <h2 class="font-playfair font-bold text-2xl mb-2 tracking-wide">
-                {{ location_name() }}
-              </h2>
-              <p class="font-montserrat tracking-widest text-sm mb-4 opacity-65">
-                {{ location_city() }}
-              </p>
+          @if (resolvedFlags().showMap) {
+            <div class="mt-12">
+              <div class="relative p-6 sm:p-8 border shadow-sm overflow-hidden {{ design().map }}">
+                <h2 class="font-playfair font-bold text-2xl mb-2 tracking-wide">
+                  {{ location_name() }}
+                </h2>
+                <p class="font-montserrat tracking-widest text-sm mb-4 opacity-65">
+                  {{ location_city() }}
+                </p>
 
-              <!-- Map Navigation Links (Google Maps & Waze) -->
-              <div class="mb-6 flex flex-wrap items-center justify-center gap-3">
-                <a
-                  [href]="googleMapsDirectionsUrl()"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="inline-flex items-center gap-2 rounded-xl border px-4 py-2 font-cairo text-xs font-bold shadow-sm transition hover:scale-105 active:scale-95 bg-blue-500/20 text-blue-200 hover:text-white border-blue-400/40"
-                >
-                  <span>📍 فتح في خرائط Google</span>
-                </a>
-                <a
-                  [href]="wazeDirectionsUrl()"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="inline-flex items-center gap-2 rounded-xl border px-4 py-2 font-cairo text-xs font-bold shadow-sm transition hover:scale-105 active:scale-95 bg-cyan-500/20 text-cyan-200 hover:text-white border-cyan-400/40"
-                >
-                  <span>🚗 التوجيه عبر Waze</span>
-                </a>
-              </div>
+                <!-- Map Navigation Links (Google Maps & Waze) -->
+                <div class="mb-6 flex flex-wrap items-center justify-center gap-3">
+                  <a
+                    [href]="googleMapsDirectionsUrl()"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 font-cairo text-xs sm:text-sm font-black shadow-md transition hover:scale-105 active:scale-95 bg-blue-600 hover:bg-blue-700 text-white border border-blue-400"
+                  >
+                    <span>📍 فتح في خرائط Google</span>
+                  </a>
+                  <a
+                    [href]="wazeDirectionsUrl()"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 font-cairo text-xs sm:text-sm font-black shadow-md transition hover:scale-105 active:scale-95 bg-[#0891b2] hover:bg-[#0e7490] text-white border border-cyan-400"
+                  >
+                    <span>🚗 التوجيه عبر Waze</span>
+                  </a>
+                </div>
 
-              <!-- Map Iframe -->
-              <div class="relative overflow-hidden shadow-md border {{ design().mapFrame }}">
-                <iframe
-                  [title]="location_name() + ' map'"
-                  class="w-full h-48 filter grayscale-[0.25] contrast-[1.05] hover:grayscale-0 transition-all duration-700 border-none"
-                  [src]="mapUrl()"
-                ></iframe>
+                <!-- Map Iframe -->
+                <div class="relative overflow-hidden shadow-md border {{ design().mapFrame }}">
+                  <iframe
+                    [title]="location_name() + ' map'"
+                    class="w-full h-48 filter grayscale-[0.25] contrast-[1.05] hover:grayscale-0 transition-all duration-700 border-none"
+                    [src]="mapUrl()"
+                  ></iframe>
+                </div>
               </div>
             </div>
-          </div>
+          }
 
           <!-- Feature 4: RSVP Attendance Confirmation -->
-          <app-rsvp-form
-            [invitationId]="id()"
-            [initialGuestName]="guestName()"
-            [template]="template()"
-          />
+          @if (resolvedFlags().showRsvp) {
+            <app-rsvp-form
+              [invitationId]="id()"
+              [initialGuestName]="guestName()"
+              [template]="template()"
+            />
+          }
 
           <!-- Guest Message Form (Wishes) -->
-          <div class="mt-12">
-            <app-guest-form [invitationId]="id()" [template]="template()" />
-          </div>
+          @if (resolvedFlags().showGuestWishes) {
+            <div class="mt-12">
+              <app-guest-form [invitationId]="id()" [template]="template()" />
+            </div>
+          }
 
         </div>
       </div>
@@ -879,28 +904,43 @@ export class InvitationCardComponent {
   bride = input<string | null | undefined>('');
   hostName = input<string | null | undefined>('');
   title = input<string | null | undefined>('');
+  eyebrowText = input<string | null | undefined>('');
+  quranVerse = input<string | null | undefined>('');
   message = input.required<string>();
   date = input.required<string>();
   location_name = input.required<string>();
   location_city = input.required<string>();
+  googleMapsUrl = input<string | null | undefined>('');
+  wazeUrl = input<string | null | undefined>('');
   dressCode = input<string | null | undefined>('');
   parentsNote = input<string | null | undefined>('');
   guestName = input<string | null | undefined>('');
   photos = input<string[] | undefined>([]);
   template = input.required<InvitationTemplateId>();
+  flags = input<Partial<InvitationFlags> | Record<string, boolean> | null | undefined>(null);
 
   private sanitizer = inject(DomSanitizer);
 
-  // Curated demo photoshoot gallery
-  demoPhotos = [
-    'https://images.unsplash.com/photo-1519741497674-611481863552?w=500&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=500&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=500&auto=format&fit=crop&q=80',
-  ];
+  // Resolved flags with smart fallbacks
+  resolvedFlags = computed(() => resolveFlags(this.flags()));
+
+  effectivePhotos = computed(() => {
+    return resolvePhotoList(this.photos());
+  });
 
   design = computed(() => cardDesigns[this.template()] ?? cardDesigns['glassmorphism-luxury']);
   decorType = computed(() => this.design().decorType || 'royal-emerald');
   eventConfig = computed(() => getEventCategoryConfig(this.eventType()));
+
+  resolvedEyebrow = computed(() => {
+    const custom = this.eyebrowText()?.trim();
+    if (custom) return custom;
+    return this.eventConfig().defaultEyebrow;
+  });
+
+  resolvedQuote = computed(() => {
+    return resolveQuote(this.eventType(), this.quranVerse());
+  });
 
   displayTitle = computed(() => {
     if (this.groom() && this.bride()) {
@@ -935,11 +975,17 @@ export class InvitationCardComponent {
   });
 
   googleMapsDirectionsUrl = computed(() => {
+    if (this.googleMapsUrl()) {
+      return this.googleMapsUrl()!;
+    }
     const query = encodeURIComponent(`${this.location_name()} ${this.location_city()}`);
     return `https://www.google.com/maps/search/?api=1&query=${query}`;
   });
 
   wazeDirectionsUrl = computed(() => {
+    if (this.wazeUrl()) {
+      return this.wazeUrl()!;
+    }
     const query = encodeURIComponent(`${this.location_name()} ${this.location_city()}`);
     return `https://waze.com/ul?q=${query}&navigate=yes`;
   });

@@ -16,10 +16,22 @@ body {
   font-family: var(--font-cairo), sans-serif;
   text-rendering: geometricPrecision;
   -webkit-tap-highlight-color: transparent;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+html {
+  max-width: 100%;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 * {
   box-sizing: border-box;
+}
+
+img, video {
+  max-width: 100%;
 }
 
 button,
