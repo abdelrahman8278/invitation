@@ -781,6 +781,32 @@ const cardDesigns: Record<InvitationTemplateId, CardDesign> = {
             />
           }
 
+          <!-- Quick Jump Buttons to RSVP & Wishes -->
+          @if (resolvedFlags().showRsvp || resolvedFlags().showGuestWishes) {
+            <div class="my-4 flex flex-wrap items-center justify-center gap-3 animate-fadeIn">
+              @if (resolvedFlags().showRsvp) {
+                <button
+                  type="button"
+                  (click)="scrollToSection('rsvp-section')"
+                  class="inline-flex items-center gap-2 rounded-2xl border px-5 py-2.5 font-cairo text-xs sm:text-sm font-black shadow-md transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border-amber-400/40 ring-1 ring-amber-400/30"
+                >
+                  <span class="text-base">✍️</span>
+                  <span>تأكيد الحضور (RSVP)</span>
+                </button>
+              }
+              @if (resolvedFlags().showGuestWishes) {
+                <button
+                  type="button"
+                  (click)="scrollToSection('wishes-section')"
+                  class="inline-flex items-center gap-2 rounded-2xl border px-5 py-2.5 font-cairo text-xs sm:text-sm font-black shadow-md transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border-emerald-400/40 ring-1 ring-emerald-400/30"
+                >
+                  <span class="text-base">💌</span>
+                  <span>تهنئة العروسين</span>
+                </button>
+              }
+            </div>
+          }
+
           <!-- Dress Code Badge (if present and flag enabled) -->
           @if (resolvedFlags().showDressCode && dressCode()) {
             <div class="my-6 inline-flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-current/5 px-6 py-3 shadow-md backdrop-blur-md">
@@ -862,16 +888,18 @@ const cardDesigns: Record<InvitationTemplateId, CardDesign> = {
 
           <!-- Feature 4: RSVP Attendance Confirmation -->
           @if (resolvedFlags().showRsvp) {
-            <app-rsvp-form
-              [invitationId]="id()"
-              [initialGuestName]="guestName()"
-              [template]="template()"
-            />
+            <div id="rsvp-section" class="scroll-mt-14 w-full">
+              <app-rsvp-form
+                [invitationId]="id()"
+                [initialGuestName]="guestName()"
+                [template]="template()"
+              />
+            </div>
           }
 
           <!-- Guest Message Form (Wishes) -->
           @if (resolvedFlags().showGuestWishes) {
-            <div class="mt-12">
+            <div id="wishes-section" class="mt-12 scroll-mt-14 w-full">
               <app-guest-form [invitationId]="id()" [template]="template()" />
             </div>
           }
@@ -989,4 +1017,11 @@ export class InvitationCardComponent {
     const query = encodeURIComponent(`${this.location_name()} ${this.location_city()}`);
     return `https://waze.com/ul?q=${query}&navigate=yes`;
   });
+
+  scrollToSection(sectionId: string): void {
+    const el = document.getElementById(sectionId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
 }
