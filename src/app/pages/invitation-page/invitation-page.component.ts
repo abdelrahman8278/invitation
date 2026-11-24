@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { SupabaseService } from '../../services/supabase.service';
 import { EnvelopeComponent } from '../../components/envelope/envelope.component';
@@ -18,6 +18,7 @@ import {
 } from '../../constants/templates';
 import { getEventCategoryConfig } from '../../constants/events';
 import { resolveFlags, resolveMusicUrl, InvitationFlags } from '../../constants/defaults';
+import { getEnvelopeShapeId, EnvelopeShapeId } from '../../constants/envelopes';
 
 @Component({
   selector: 'app-invitation-page',
@@ -63,17 +64,19 @@ import { resolveFlags, resolveMusicUrl, InvitationFlags } from '../../constants/
           />
         }
 
-        <!-- Template and Event Switcher Bar (Only visible for default client: ahmed-tia) -->
-        @if (isDefaultClient()) {
+        <!-- Template and Event Switcher Bar (Strictly for ahmed-tia) -->
+        @if (isAhmedTia()) {
           <app-template-switcher
             [activeTemplate]="currentTemplate()"
             [activeEvent]="currentEventType()"
+            [activeEnvelope]="currentEnvelopeShape()"
           />
         }
 
         <!-- Envelope / Invitation Card Transition (Envelope Controlled by Flag) -->
         @if (flags().showEnvelope && !opened()) {
           <app-envelope
+            [shape]="currentEnvelopeShape()"
             [template]="currentTemplate()"
             [eventType]="currentEventType()"
             [groom]="inv.groom || ''"
@@ -81,6 +84,12 @@ import { resolveFlags, resolveMusicUrl, InvitationFlags } from '../../constants/
             [hostName]="inv.host_name || inv.groom || ''"
             [title]="inv.title || ''"
             [guestName]="guestName()"
+            [weddingDate]="inv.wedding_date"
+            [locationName]="inv.location_name"
+            [locationCity]="inv.location_city"
+            [quranVerse]="inv.quran_verse"
+            [message]="inv.message"
+            [parentsNote]="inv.parents_note"
             (opened)="handleOpened()"
           />
         } @else {
@@ -109,22 +118,34 @@ import { resolveFlags, resolveMusicUrl, InvitationFlags } from '../../constants/
           />
         }
 
-        <!-- Floating Button: Guest Messages Link (Controlled by Flag) -->
-        @if (flags().showGuestWishes) {
-          <div class="fixed bottom-5 right-5 z-[60] sm:bottom-6 sm:right-6 animate-fadeIn">
+        <!-- Floating Buttons: RSVP & Guest Messages -->
+        <div class="fixed bottom-5 right-5 z-[60] sm:bottom-6 sm:right-6 flex flex-col items-end gap-2.5 animate-fadeIn">
+          @if (flags().showRsvp) {
+            <button
+              type="button"
+              (click)="scrollToSection('rsvp-section')"
+              class="flex min-h-11 items-center gap-2 rounded-full border px-4 py-2.5 transition-all duration-300 group sm:px-5 hover:scale-105 active:scale-95 shadow-2xl backdrop-blur-2xl bg-amber-500/90 hover:bg-amber-400 text-stone-950 border-amber-300 ring-2 ring-amber-400/40 font-cairo text-xs sm:text-sm font-black"
+              aria-label="تأكيد الحضور"
+            >
+              <span class="text-sm">✍️</span>
+              <span>تأكيد الحضور (RSVP)</span>
+            </button>
+          }
+
+          @if (flags().showGuestWishes) {
             <a
               [routerLink]="['/', inv.slug, 'messages']"
               [queryParams]="{ template: currentTemplate(), mode: mode(), event: currentEventType() }"
-              class="flex min-h-12 items-center gap-2 rounded-full border px-4 py-3 transition-all duration-300 group sm:px-5 hover:scale-105 active:scale-95 {{ ui().actionButton }}"
+              class="flex min-h-11 items-center gap-2 rounded-full border px-4 py-2.5 transition-all duration-300 group sm:px-5 hover:scale-105 active:scale-95 {{ ui().actionButton }}"
               aria-label="رسائل الضيوف"
             >
-              <svg class="h-5 w-5 fill-current transition-transform duration-300 group-hover:scale-110 {{ ui().actionIcon }}" viewBox="0 0 24 24">
+              <svg class="h-4 w-4 fill-current transition-transform duration-300 group-hover:scale-110 {{ ui().actionIcon }}" viewBox="0 0 24 24">
                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
               </svg>
-              <span class="font-cairo text-sm font-bold">رسائل الضيوف</span>
+              <span class="font-cairo text-xs sm:text-sm font-bold">صندوق المباركات</span>
             </a>
-          </div>
-        }
+          }
+        </div>
 
         <!-- Floating Social Buttons: WhatsApp & Instagram (Fixed on scroll, strictly for ahmed-tia) -->
         @if (isAhmedTia()) {
@@ -190,6 +211,7 @@ export class InvitationPageComponent implements OnInit {
   @ViewChild('audioController') audioController?: AudioPlayerComponent;
 
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private supabaseService = inject(SupabaseService);
   private titleService = inject(Title);
   metaService = inject(Meta);
@@ -203,6 +225,7 @@ export class InvitationPageComponent implements OnInit {
 
   slug = signal<string>('');
   templateQuery = signal<string | null>(null);
+  envelopeQuery = signal<string | null>(null);
   modeQuery = signal<string | null>(null);
   eventQuery = signal<string | null>(null);
   guestName = signal<string>('');
@@ -228,6 +251,15 @@ export class InvitationPageComponent implements OnInit {
     }
     const inv = this.invitation();
     return getInvitationTemplateId(inv?.template ?? inv?.template_id);
+  });
+
+  currentEnvelopeShape = computed<EnvelopeShapeId>(() => {
+    const query = this.envelopeQuery();
+    if (query) {
+      return getEnvelopeShapeId(query);
+    }
+    const inv = this.invitation();
+    return getEnvelopeShapeId(inv?.envelope_shape);
   });
 
   currentEventType = computed<string>(() => {
@@ -259,6 +291,14 @@ export class InvitationPageComponent implements OnInit {
       this.templateQuery.set(queryParams.get('template'));
       this.modeQuery.set(queryParams.get('mode'));
       this.eventQuery.set(queryParams.get('event') || queryParams.get('type'));
+
+      const envParam = queryParams.get('envelope');
+      if (envParam !== this.envelopeQuery()) {
+        this.envelopeQuery.set(envParam);
+        if (envParam && this.opened()) {
+          this.opened.set(false); // Reset to closed so the user immediately sees and experiences the new envelope
+        }
+      }
       
       // Guest Name parameter support (?to=... or ?guest=...)
       const guest = queryParams.get('to') || queryParams.get('guest');
@@ -326,5 +366,26 @@ export class InvitationPageComponent implements OnInit {
   handleOpened(): void {
     this.opened.set(true);
     this.audioController?.play();
+  }
+
+  scrollToSection(sectionId: string): void {
+    if (!this.opened()) {
+      this.handleOpened();
+    }
+    setTimeout(() => {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 150);
+  }
+
+  switchEntrance(shape: EnvelopeShapeId): void {
+    this.opened.set(false);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { envelope: shape },
+      queryParamsHandling: 'merge',
+    });
   }
 }

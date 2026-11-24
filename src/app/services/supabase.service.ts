@@ -349,6 +349,7 @@ export class SupabaseService {
         dress_code: 'رسمي فاخر (Formal)',
         template: 'bohemian-terracotta',
         template_id: 'bohemian-terracotta',
+        envelope_shape: 'vertical-royal-embossed',
         music_url: 'until-i-found-you-violin.mp3',
         photos: [
           'wedding-1.jpeg',
@@ -368,7 +369,7 @@ export class SupabaseService {
     }
 
     return {
-      id: 'demo-invitation-uuid-1234',
+      id: '0a782b98-f7f3-42d5-a5a2-9c7991568c16',
       slug: slug,
       event_type: 'wedding',
       groom: 'أحمد محمود',
@@ -387,7 +388,8 @@ export class SupabaseService {
       dress_code: 'رسمي كامل (Formal / Black Tie)',
       template: 'royal-emerald-gold',
       template_id: 'royal-emerald-gold',
-      music_url: 'music.mp3',
+      envelope_shape: 'vertical-royal-embossed',
+      music_url: 'shyryn_ya_lylt_byda.mp3',
       photos: [
         'wedding-1.jpeg',
         'wedding-2.jpeg',

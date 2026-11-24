@@ -1,6 +1,6 @@
 import { Component, input, signal, computed, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import {
   invitationTemplates,
   getInvitationTemplateUi,
@@ -8,6 +8,7 @@ import {
   isDarkTemplate
 } from '../../constants/templates';
 import { eventCategories, EventType } from '../../constants/events';
+import { envelopeShapes, EnvelopeShapeId } from '../../constants/envelopes';
 
 interface ThemeColorInfo {
   accent: string;
@@ -51,7 +52,7 @@ const themeColors: Record<InvitationTemplateId, ThemeColorInfo> = {
 @Component({
   selector: 'app-template-switcher',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <!-- Floating Luxury Control Pill (Always accessible, never clutters) -->
     <div class="fixed top-4 left-4 z-[90] flex items-center gap-2">
@@ -116,6 +117,26 @@ const themeColors: Record<InvitationTemplateId, ThemeColorInfo> = {
       <!-- Drawer Content (Scrollable) -->
       <div class="flex-1 overflow-y-auto px-6 py-5 space-y-6 scrollbar-none">
         
+        <!-- Quick Dashboards Strip -->
+        <div class="rounded-2xl border border-amber-400/30 bg-amber-500/10 p-3 flex items-center justify-between gap-2">
+          <a
+            [routerLink]="['/', 'ahmed-tia', 'rsvp']"
+            (click)="close()"
+            class="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-amber-400 text-stone-950 py-2 px-3 text-xs font-cairo font-black transition hover:bg-amber-300"
+          >
+            <span>📊</span>
+            <span>لوحة تأكيدات الحضور</span>
+          </a>
+          <a
+            [routerLink]="['/', 'ahmed-tia', 'messages']"
+            (click)="close()"
+            class="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/10 text-white py-2 px-3 text-xs font-cairo font-black transition hover:bg-white/20"
+          >
+            <span>💌</span>
+            <span>صندوق المباركات</span>
+          </a>
+        </div>
+        
         <!-- Section 1: Event Category Selector -->
         <div>
           <div class="mb-3 flex items-center justify-between">
@@ -145,12 +166,61 @@ const themeColors: Record<InvitationTemplateId, ThemeColorInfo> = {
           </div>
         </div>
 
-        <!-- Section 2: All 30 Luxury Themes Grid -->
+        <!-- Section 2: Opening Styles & Envelope Shapes Selector -->
+        <div>
+          <div class="mb-3 flex items-center justify-between">
+            <h3 class="font-cairo text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+              <span>🎭</span>
+              <span>2. دخلة افتتاح الدعوة (الظرف أو الستارة)</span>
+            </h3>
+            <span class="font-cairo text-[11px] text-amber-300 font-semibold">{{ envelopeList.length }} دخلات مميزة</span>
+          </div>
+
+          <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            @for (env of envelopeList; track env.id) {
+              @let isEnvActive = env.id === activeEnvelope();
+              <button
+                type="button"
+                (click)="selectEnvelope(env.id)"
+                class="group relative flex items-start gap-3 rounded-2xl border p-3 text-start transition-all duration-200 active:scale-95 {{
+                  isEnvActive
+                    ? 'border-amber-400 bg-amber-400/20 shadow-xl ring-2 ring-amber-400 text-white'
+                    : 'border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-white hover:border-white/20'
+                }}"
+              >
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 text-xl shadow-inner border border-white/20">
+                  {{ env.icon }}
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <p class="font-cairo text-xs font-black truncate leading-tight text-white">
+                      {{ env.name }}
+                    </p>
+                    @if (isEnvActive) {
+                      <span class="rounded-full bg-amber-400 text-black px-1.5 py-0.5 text-[9px] font-black shrink-0">
+                        مفعّل ✓
+                      </span>
+                    }
+                  </div>
+                  <span class="inline-block rounded-md bg-amber-400/15 border border-amber-400/30 px-1.5 py-0.5 text-[9px] font-bold text-amber-300 mt-1">
+                    {{ env.badge }}
+                  </span>
+                  <p class="font-cairo text-[10px] text-slate-300 line-clamp-2 mt-1 leading-relaxed">
+                    {{ env.description }}
+                  </p>
+                </div>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Section 3: All 30 Luxury Themes Grid -->
         <div>
           <div class="mb-3 flex items-center justify-between">
             <h3 class="font-cairo text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
               <span>💎</span>
-              <span>2. تصاميم وثيمات الدعوة ({{ templates.length }} ثيم)</span>
+              <span>3. تصاميم وثيمات الدعوة ({{ templates.length }} ثيم)</span>
             </h3>
             <span class="font-cairo text-[11px] text-slate-300 font-semibold">اختر للتطبيق المباشر</span>
           </div>
@@ -229,12 +299,14 @@ const themeColors: Record<InvitationTemplateId, ThemeColorInfo> = {
 export class TemplateSwitcherComponent {
   activeTemplate = input.required<InvitationTemplateId>();
   activeEvent = input<string>('wedding');
+  activeEnvelope = input<EnvelopeShapeId>('vertical-royal-embossed');
 
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
   templates = invitationTemplates;
   eventList = Object.values(eventCategories);
+  envelopeList = envelopeShapes;
 
   isOpen = signal<boolean>(false);
 
@@ -267,6 +339,14 @@ export class TemplateSwitcherComponent {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { event: eventType },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  selectEnvelope(shape: EnvelopeShapeId): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { envelope: shape },
       queryParamsHandling: 'merge',
     });
   }

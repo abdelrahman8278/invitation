@@ -1,5 +1,6 @@
 import { Component, input, signal, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DEFAULT_FALLBACK_MUSIC } from '../../constants/defaults';
 
 @Component({
   selector: 'app-audio-player',
@@ -10,7 +11,7 @@ import { CommonModule } from '@angular/common';
       <audio
         #audioElement
         loop
-        [src]="src() || 'music.mp3'"
+        [src]="src() || defaultMusic"
         (play)="isPlaying.set(true)"
         (pause)="isPlaying.set(false)"
       ></audio>
@@ -91,7 +92,8 @@ import { CommonModule } from '@angular/common';
 export class AudioPlayerComponent implements OnInit {
   @ViewChild('audioElement') audioRef?: ElementRef<HTMLAudioElement>;
 
-  src = input<string | null | undefined>('music.mp3');
+  readonly defaultMusic = DEFAULT_FALLBACK_MUSIC;
+  src = input<string | null | undefined>(DEFAULT_FALLBACK_MUSIC);
   autoPlayOnGesture = input<boolean>(false);
 
   isPlaying = signal<boolean>(false);

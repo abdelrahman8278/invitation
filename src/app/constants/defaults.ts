@@ -81,7 +81,7 @@ export const DEFAULT_EVENT_QUOTES: Record<EventType, EventQuoteConfig> = {
   },
 };
 
-export const DEFAULT_FALLBACK_MUSIC = 'music.mp3';
+export const DEFAULT_FALLBACK_MUSIC = '/music/shyryn_ya_lylt_byda.mp3';
 
 export const DEFAULT_CLIENT_SLUG = 'ahmed-tia';
 
@@ -92,20 +92,27 @@ export const DEFAULT_PHOTOS: string[] = [
 ];
 
 /**
- * حل رابط أو اسم الأغنية: الأغنية الأساسية الافتراضية هي music (music.mp3)
+ * حل رابط أو اسم الأغنية: الأغنية الأساسية الافتراضية هي shyryn_ya_lylt_byda.mp3 في مسار /music/
  */
 export function resolveMusicUrl(music?: string | null): string {
   if (!music || !music.trim() || music.trim() === 'music' || music.trim() === 'music.mp3') {
-    return 'music.mp3';
+    return DEFAULT_FALLBACK_MUSIC;
   }
   const trimmed = music.trim();
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/')) {
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     return trimmed;
   }
-  if (!trimmed.includes('.')) {
-    return `${trimmed}.mp3`;
+  if (trimmed.startsWith('/')) {
+    return trimmed;
   }
-  return trimmed;
+  if (trimmed === 'shyryn_ya_lylt_byda' || trimmed === 'shyryn_ya_lylt_byda.mp3') {
+    return '/music/shyryn_ya_lylt_byda.mp3';
+  }
+  if (trimmed === 'romantic-music-for-weddings' || trimmed === 'romantic-music-for-weddings.mp3') {
+    return '/music/romantic-music-for-weddings.mp3';
+  }
+  const filename = trimmed.includes('.') ? trimmed : `${trimmed}.mp3`;
+  return `/music/${filename}`;
 }
 
 /**
@@ -237,6 +244,7 @@ export function resolveInvitationDefaults(
     dress_code: inv?.dress_code?.trim() || (flags.showDressCode ? 'رسمي فاخر (Formal / Black Tie)' : undefined),
     template: defaultTemplate,
     template_id: defaultTemplate,
+    envelope_shape: inv?.envelope_shape || 'vertical-royal-embossed',
     music_url: music_url,
     photos: photos,
     video_url: inv?.video_url || null,

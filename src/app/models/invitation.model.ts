@@ -1,4 +1,5 @@
 import type { InvitationTemplateId } from '../constants/templates';
+import type { EnvelopeShapeId } from '../constants/envelopes';
 import type { EventType } from '../constants/events';
 import type { InvitationFlags } from '../constants/defaults';
 
@@ -22,6 +23,7 @@ export interface Invitation {
   dress_code?: string | null;
   template?: InvitationTemplateId | string | null;
   template_id?: InvitationTemplateId | string | null;
+  envelope_shape?: EnvelopeShapeId | string | null;
   music_url?: string | null;
   guest_name?: string | null;
   photos?: string[];
