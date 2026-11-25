@@ -1660,7 +1660,7 @@ export class EnvelopeComponent {
 
   formattedDate = computed(() => {
     const raw = this.weddingDate();
-    if (!raw) return 'الجمعة، ٢٠ نوفمبر ٢٠٢٧';
+    if (!raw) return 'الأربعاء، ٢٠ يناير ٢٠٢٧';
     try {
       const d = new Date(raw);
       return d.toLocaleDateString('ar-EG', {

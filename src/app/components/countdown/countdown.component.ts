@@ -142,12 +142,17 @@ export class CountdownComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
-    const target = this.date() ? new Date(this.date()!) : new Date('2026-12-31T18:00:00');
-    this.timeLeft.set(calculateTimeLeft(target));
+    this.updateTime();
 
     this.timerId = setInterval(() => {
-      this.timeLeft.set(calculateTimeLeft(target));
+      this.updateTime();
     }, 1000);
+  }
+
+  private updateTime(): void {
+    const raw = this.date();
+    const target = raw ? new Date(raw) : new Date('2027-01-20T19:00:00+02:00');
+    this.timeLeft.set(calculateTimeLeft(target));
   }
 
   ngOnDestroy(): void {

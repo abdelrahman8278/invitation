@@ -219,7 +219,7 @@ export function resolveInvitationDefaults(
   const defaultMessage =
     inv?.message?.trim() ||
     'يسرنا ويسعدنا أن نتشرف بدعوتكم الكريمة لحضور حفلنا المبارك ومشاركتنا أبهى لحظات العمر، فحضوركم يكتمل به سرورنا وتزدان به بهجتنا.';
-  const defaultDate = inv?.wedding_date || '2027-11-20T19:00:00+02:00';
+  const defaultDate = inv?.wedding_date || '2027-01-20T19:00:00+02:00';
   const defaultLocationName = inv?.location_name || 'قصر البارون إمبان - القاعة الكبرى';
   const defaultLocationCity = inv?.location_city || 'القاهرة، مصر';
   const defaultTemplate = (inv?.template || inv?.template_id || 'royal-emerald-gold') as any;

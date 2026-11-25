@@ -285,7 +285,7 @@ export class InvitationPageComponent implements OnInit {
           this.opened.set(false); // Reset to closed so the user immediately sees and experiences the new envelope
         }
       }
-      
+
       // Guest Name parameter support (?to=... or ?guest=...)
       const guest = queryParams.get('to') || queryParams.get('guest');
       if (guest) {
