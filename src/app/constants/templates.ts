@@ -580,7 +580,7 @@ export const invitationTemplateUi: Record<InvitationTemplateId, InvitationTempla
     switcherIdle: 'bg-white/75 text-[#C44569] hover:bg-white',
     actionButton: 'bg-white/90 border-white text-[#C44569] shadow-xl hover:bg-white',
     actionIcon: 'text-[#C44569]',
-    countdownText: 'text-white',
+    countdownText: 'text-[#3b091f]',
     digitBox: 'bg-white/90 border-[#FF6B9D]/30 shadow-xl',
     digitText: 'text-[#C44569] font-black',
     formLine: 'bg-[#FF6B9D]',

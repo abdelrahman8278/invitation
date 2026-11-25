@@ -115,18 +115,27 @@ import {
             <div class="space-y-4">
               @for (msg of messages(); track msg.id) {
                 <article
-                  class="rounded-3xl border p-6 {{ ui().formPanel }} transition-all duration-300 hover:scale-[1.01]"
+                  class="rounded-3xl border p-6 {{ ui().formPanel }} {{ ui().countdownText }} transition-all duration-300 hover:scale-[1.01]"
                   dir="rtl"
                 >
-                  <div class="mb-3 flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-full border font-cairo text-lg font-bold {{ ui().formInput }}">
-                      {{ msg.name.charAt(0) }}
+                  <div class="mb-4 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                      <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border font-cairo text-lg font-bold shadow-sm {{ ui().formInput }}">
+                        {{ msg.name.charAt(0) }}
+                      </div>
+                      <div>
+                        <h3 class="font-cairo text-base font-bold leading-tight {{ ui().countdownText }}">
+                          {{ msg.name }}
+                        </h3>
+                        @if (msg.created_at) {
+                          <time class="font-cairo text-[11px] opacity-75 font-medium block mt-0.5 {{ ui().countdownText }}">
+                            {{ formatMessageDate(msg.created_at) }}
+                          </time>
+                        }
+                      </div>
                     </div>
-                    <h3 class="font-cairo text-sm font-bold {{ ui().countdownText }}">
-                      {{ msg.name }}
-                    </h3>
                   </div>
-                  <p class="font-cairo text-sm leading-relaxed {{ ui().countdownText }}">
+                  <p class="font-cairo text-sm sm:text-base leading-relaxed whitespace-pre-line font-medium {{ ui().countdownText }}" style="color: currentColor;">
                     {{ msg.message }}
                   </p>
                 </article>
@@ -213,5 +222,20 @@ export class MessagesPageComponent implements OnInit {
 
     this.messages.set(res.messages);
     this.allowed.set(true);
+  }
+
+  formatMessageDate(iso?: string): string {
+    if (!iso) return '';
+    try {
+      const d = new Date(iso);
+      return new Intl.DateTimeFormat('ar-EG', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(d);
+    } catch {
+      return '';
+    }
   }
 }

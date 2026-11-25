@@ -146,8 +146,3 @@ iframe {
   color: #f8fafc;
 }
 
-[data-invitation-mode="dark"] p,
-[data-theme-type="dark"] p {
-  color: inherit;
-}
-
