@@ -1651,6 +1651,7 @@ export class EnvelopeComponent {
   parentsNote = input<string | null | undefined>('');
 
   opened = output<void>();
+  openingStarted = output<void>();
 
   isOpened = signal<boolean>(false);
 
@@ -1659,7 +1660,7 @@ export class EnvelopeComponent {
 
   formattedDate = computed(() => {
     const raw = this.weddingDate();
-    if (!raw) return 'الجمعة، ٢٠ نوفمبر ٢٠٢٦';
+    if (!raw) return 'الجمعة، ٢٠ نوفمبر ٢٠٢٧';
     try {
       const d = new Date(raw);
       return d.toLocaleDateString('ar-EG', {
@@ -1713,6 +1714,7 @@ export class EnvelopeComponent {
   handleOpen(): void {
     if (this.isOpened()) return;
     this.isOpened.set(true);
+    this.openingStarted.emit();
 
     setTimeout(() => {
       this.opened.emit();

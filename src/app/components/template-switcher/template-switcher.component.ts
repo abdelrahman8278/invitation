@@ -55,24 +55,21 @@ const themeColors: Record<InvitationTemplateId, ThemeColorInfo> = {
   imports: [CommonModule, RouterLink],
   template: `
     <!-- Floating Luxury Control Pill (Always accessible, never clutters) -->
-    <div class="fixed top-4 left-4 z-[90] flex items-center gap-2">
+    <div class="fixed top-4 left-4 z-[90]">
       <button
         type="button"
         (click)="toggleOpen()"
         aria-label="تخصيص الثيم والمناسبة"
         [attr.aria-expanded]="isOpen()"
-        class="group flex items-center gap-2.5 rounded-full border px-4 py-2.5 shadow-2xl backdrop-blur-2xl transition-all duration-300 hover:scale-105 active:scale-95 {{ ui().switcher }} {{
+        class="group flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 shadow-xl backdrop-blur-xl transition-all duration-300 hover:scale-105 active:scale-95 text-xs font-cairo font-bold {{ ui().switcher }} {{
           isDark() ? 'text-white border-white/30' : ''
         }}"
       >
-        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-amber-400 text-black shadow-md text-xs font-black animate-pulse">
+        <span class="flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-stone-950 text-[10px] font-black">
           🎨
         </span>
-        <span class="font-cairo text-xs font-bold sm:text-sm">
-          تخصيص الثيم ({{ templates.length }} تصميم)
-        </span>
-        <span class="hidden sm:inline-block rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold">
-          {{ currentThemeBadge() }}
+        <span class="text-[11px] font-black">
+          الثيمات
         </span>
       </button>
     </div>

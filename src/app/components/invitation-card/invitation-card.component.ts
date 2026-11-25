@@ -783,12 +783,12 @@ const cardDesigns: Record<InvitationTemplateId, CardDesign> = {
 
           <!-- Quick Jump Buttons to RSVP & Wishes -->
           @if (resolvedFlags().showRsvp || resolvedFlags().showGuestWishes) {
-            <div class="my-4 flex flex-wrap items-center justify-center gap-3 animate-fadeIn">
+            <div class="my-5 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 animate-fadeIn">
               @if (resolvedFlags().showRsvp) {
                 <button
                   type="button"
                   (click)="scrollToSection('rsvp-section')"
-                  class="inline-flex items-center gap-2 rounded-2xl border px-5 py-2.5 font-cairo text-xs sm:text-sm font-black shadow-md transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border-amber-400/40 ring-1 ring-amber-400/30"
+                  class="inline-flex items-center gap-2 rounded-xl border-2 border-amber-300 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-400 px-4 py-2 font-cairo text-xs sm:text-sm font-black text-stone-950 shadow-md shadow-amber-500/25 transition-all duration-300 hover:scale-105 hover:brightness-105 active:scale-95"
                 >
                   <span class="text-base">✍️</span>
                   <span>تأكيد الحضور (RSVP)</span>
@@ -798,7 +798,7 @@ const cardDesigns: Record<InvitationTemplateId, CardDesign> = {
                 <button
                   type="button"
                   (click)="scrollToSection('wishes-section')"
-                  class="inline-flex items-center gap-2 rounded-2xl border px-5 py-2.5 font-cairo text-xs sm:text-sm font-black shadow-md transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border-emerald-400/40 ring-1 ring-emerald-400/30"
+                  class="inline-flex items-center gap-2 rounded-xl border-2 border-emerald-400 bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-700 px-4 py-2 font-cairo text-xs sm:text-sm font-black text-white shadow-md shadow-emerald-700/25 transition-all duration-300 hover:scale-105 hover:brightness-110 active:scale-95"
                 >
                   <span class="text-base">💌</span>
                   <span>تهنئة العروسين</span>
